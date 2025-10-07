@@ -12,3 +12,13 @@ servo1 = servo.Servo(pca.channels[1], min_pulse=500, max_pulse=2500)
 
 servo0.angle = 0
 servo1.angle = 0
+
+time.sleep(1)
+
+servo0.angle = 180
+servo1.angle = 180
+
+time.sleep(1)
+
+servo0.angle = 0
+servo1.angle = 0
