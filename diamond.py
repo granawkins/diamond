@@ -12,18 +12,18 @@ class Diamond:
         self.servo0 = servo.Servo(self.pca.channels[0], min_pulse=500, max_pulse=2500)
         self.servo1 = servo.Servo(self.pca.channels[1], min_pulse=500, max_pulse=2500)
 
-        # Set initial angles: servo horns perpendicular, leg neutral
-        self.servo0.angle = 52
-        self.servo1.angle = 38
+        self.reset()
 
-    def demo(self):
-        # Cycle continuously through all angles 45 to 135 in steps of 15
-        while True:
-            for angle in range(45, 135, 15):
-                self.servo0.angle = angle
-                self.servo1.angle = angle
-                time.sleep(0.1)
-            for angle in range(135, 45, -15):
-                self.servo0.angle = angle
-                self.servo1.angle = angle
-                time.sleep(0.1)
+    def reset(self):
+        self.servo0.angle = 52
+        self.servo1.angle = 52
+
+    def forward(self):
+        self.servo0.angle = 30
+        time.sleep(0.5)
+        self.servo1.angle = 40
+        time.sleep(0.5)
+        self.servo0.angle = 60
+        time.sleep(0.5)
+        self.servo1.angle = 60
+        time.sleep(0.5)
