@@ -3,7 +3,7 @@
 Diamond is a quadruped robot, and these are all the files related to its design and software. 
 
 ## Electronics
- 
+```
  Battery: Lithium Ion 3C 2200 mAh
                 |
              UBEC 5V
@@ -21,6 +21,7 @@ Diamond is a quadruped robot, and these are all the files related to its design 
               4-7     ...front right
              8-11     ...back left
 ------------12-15     ...back right
+```
 
 ## Roadmap
 - Better leg design
