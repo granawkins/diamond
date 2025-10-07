@@ -5,18 +5,16 @@ from adafruit_motor import servo
 
 class Diamond:
     def __init__(self):
-        i2c = busio.I2C(board.SCL, board.SDA)
-        pca = PCA9685(i2c)
-        pca.frequency = 50
+        self.i2c = busio.I2C(board.SCL, board.SDA)
+        self.pca = PCA9685(self.i2c)
+        self.pca.frequency = 50
 
-        servo0 = servo.Servo(pca.channels[0], min_pulse=500, max_pulse=2500)
-        servo1 = servo.Servo(pca.channels[1], min_pulse=500, max_pulse=2500)
+        self.servo0 = servo.Servo(self.pca.channels[0], min_pulse=500, max_pulse=2500)
+        self.servo1 = servo.Servo(self.pca.channels[1], min_pulse=500, max_pulse=2500)
 
-        servo0.angle = 0  # horizontal, left
-        servo1.angle = 0  # vertical, up
-
-        servo0.angle = 52
-        servo1.angle = 38  # legs perpendicular
+        # Set initial angles: servo horns perpendicular, leg neutral
+        self.servo0.angle = 52
+        self.servo1.angle = 38
 
     def demo(self):
         # Cycle continuously through all angles 45 to 135 in steps of 15
