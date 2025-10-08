@@ -25,6 +25,7 @@ Diamond is a quadruped robot, and these are all the files related to its design 
 
 ## Roadmap
 - Better leg design
+- Power switch/button
 - Full body design
 - Control programming
 - VLM integration
