@@ -51,3 +51,12 @@ class Diamond():
     def forward(self):
         for leg in self.legs.values():
             leg.forward()
+
+    def bounce(self, n):
+        for _ in range(n):
+            for leg in self.legs.values():
+                leg.lower_hip.angle = 30
+                leg.upper_hip.angle = 30
+            time.sleep(0.5)
+            for leg in self.legs.values():
+                leg.reset()
