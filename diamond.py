@@ -5,6 +5,7 @@ from adafruit_motor import servo
 
 class Leg():
     def __init__(self, name, pca, lower_hip_channel, upper_hip_channel, shoulder_channel):
+        self.name = name
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.pca = PCA9685(self.i2c)
         self.pca.frequency = 50
@@ -19,16 +20,6 @@ class Leg():
         self.lower_hip.angle = 52
         self.upper_hip.angle = 52
         self.shoulder.angle = 90
-
-    def forward(self):
-        self.lower_hip.angle = 30
-        time.sleep(0.5)
-        self.upper_hip.angle = 40
-        time.sleep(0.5)
-        self.lower_hip.angle = 60
-        time.sleep(0.5)
-        self.upper_hip.angle = 60
-        time.sleep(0.5)
 
 
 class Diamond():
@@ -45,18 +36,46 @@ class Diamond():
         }
 
     def reset(self):
+        # Collect all servo positions first
+        servo_commands = []
         for leg in self.legs.values():
-            leg.reset()
+            servo_commands.extend([
+                (leg.lower_hip, 52),
+                (leg.upper_hip, 52),
+                (leg.shoulder, 90)
+            ])
+        
+        # Execute all commands as quickly as possible
+        for servo_obj, angle in servo_commands:
+            servo_obj.angle = angle
 
-    def forward(self):
+    def up(self):
+        # Collect all servo positions first
+        servo_commands = []
         for leg in self.legs.values():
-            leg.forward()
+            if "right" in leg.name:
+                servo_commands.extend([
+                    (leg.upper_hip, 75),
+                    (leg.lower_hip, 30)
+                ])
+            else:
+                servo_commands.extend([
+                    (leg.upper_hip, 30),
+                    (leg.lower_hip, 75)
+                ])
+        
+        # Execute all commands as quickly as possible
+        for servo_obj, angle in servo_commands:
+            servo_obj.angle = angle
 
-    def bounce(self, n):
-        for _ in range(n):
-            for leg in self.legs.values():
-                leg.lower_hip.angle = 30
-                leg.upper_hip.angle = 30
-            time.sleep(0.5)
-            for leg in self.legs.values():
-                leg.reset()
+    
+    def dance(self, times):
+        for _ in range(times):
+            self.up()
+            time.sleep(2)
+            self.reset()
+            time.sleep(2)
+
+if __name__ == "__main__":
+    diamond = Diamond()
+    diamond.dance(10)
