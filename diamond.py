@@ -47,3 +47,7 @@ class Diamond():
     def reset(self):
         for leg in self.legs.values():
             leg.reset()
+
+    def forward(self):
+        for leg in self.legs.values():
+            leg.forward()
