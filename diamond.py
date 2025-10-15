@@ -56,12 +56,14 @@ class Diamond():
             if "right" in leg.name:
                 servo_commands.extend([
                     (leg.upper_hip, 75),
-                    (leg.lower_hip, 30)
+                    (leg.lower_hip, 30),
+                    (leg.shoulder, 120)
                 ])
             else:
                 servo_commands.extend([
                     (leg.upper_hip, 30),
-                    (leg.lower_hip, 75)
+                    (leg.lower_hip, 75),
+                    (leg.shoulder, 60)
                 ])
         
         # Execute all commands as quickly as possible
