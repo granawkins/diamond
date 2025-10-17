@@ -21,7 +21,7 @@ def main(channel: int, last_angle: int):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("channel", type=int, nargs="1", default=0)
-    parser.add_argument("last_angle", type=int, nargs="1", default=90)
+    parser.add_argument("channel", type=int, nargs="?", default=0)
+    parser.add_argument("last_angle", type=int, nargs="?", default=90)
     args = parser.parse_args()
-    main(args.channel[0], args.last_angle[0])
+    main(args.channel, args.last_angle)
