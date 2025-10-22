@@ -1,0 +1,66 @@
+frequency: 50
+legs:
+  front_left:
+    lower_hip:
+      channel: 0
+      home: 52
+      min: 0
+      max: 180
+    upper_hip:
+      channel: 1
+      home: 52
+      min: 0
+      max: 180
+    shoulder:
+      channel: 2
+      home: 90
+      min: 0
+      max: 180
+  front_right:
+    lower_hip:
+      channel: 4
+      home: 52
+      min: 0
+      max: 180
+    upper_hip:
+      channel: 5
+      home: 52
+      min: 0
+      max: 180
+    shoulder:
+      channel: 6
+      home: 90
+      min: 0
+      max: 180
+  back_left:
+    lower_hip:
+      channel: 8
+      home: 52
+      min: 0
+      max: 180
+    upper_hip:
+      channel: 9
+      home: 52
+      min: 0
+      max: 180
+    shoulder:
+      channel: 10
+      home: 90
+      min: 0
+      max: 180
+  back_right:
+    lower_hip:
+      channel: 12
+      home: 52
+      min: 0
+      max: 180
+    upper_hip:
+      channel: 13
+      home: 52
+      min: 0
+      max: 180
+    shoulder:
+      channel: 14
+      home: 90
+      min: 0
+      max: 180
