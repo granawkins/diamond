@@ -12,7 +12,7 @@ Diamond is a quadruped robot running on Raspberry Pi 5 that controls MG90 servos
 - **Power**: Waveshare UPS HAT with two 18650 cells (8.4V charger). The HAT's 5V output (pin 2) connects directly to V+ on the PCA9685
 - **PWM Driver**: PCA9685 board (16 channels at 50Hz)
 - **Servos**: MG90 servos with min_pulse=500, max_pulse=2500
-- **Channel mapping**: 0-3 front left, 4-7 front right, 8-11 back left, 12-15 back right
+- **Channel mapping**: 0-3 front left, 4-7 back left, 8-11 back right, 12-15 front right
 
 ## Development
 
