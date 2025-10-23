@@ -1,0 +1,15 @@
+[Unit]
+Description=Diamond Robot Web Controller
+After=network.target
+
+[Service]
+Type=simple
+User=admin
+WorkingDirectory=/home/admin/diamond
+Environment="PATH=/home/admin/diamond/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/admin/diamond/.venv/bin/python /home/admin/diamond/webapp.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

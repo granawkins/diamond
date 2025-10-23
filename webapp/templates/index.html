@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diamond Robot Controller</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Diamond Servo Controller</h1>
+
+        <div class="battery-status" id="battery">
+            <h2>🔋 Battery Status</h2>
+            <div class="battery-grid">
+                <div class="battery-metric">
+                    <div class="battery-metric-label">Voltage</div>
+                    <div class="battery-metric-value" id="battery-voltage">--</div>
+                </div>
+                <div class="battery-metric">
+                    <div class="battery-metric-label">Current</div>
+                    <div class="battery-metric-value" id="battery-current">--</div>
+                </div>
+                <div class="battery-metric">
+                    <div class="battery-metric-label">Power</div>
+                    <div class="battery-metric-value" id="battery-power">--</div>
+                </div>
+                <div class="battery-metric">
+                    <div class="battery-metric-label">Status</div>
+                    <div class="battery-metric-value">
+                        <span class="battery-status-badge status-unavailable" id="battery-status">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="servos"></div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
