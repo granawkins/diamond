@@ -6,6 +6,9 @@ Simple FastAPI web app to control the Diamond quadruped robot over the local net
 
 from fastapi import FastAPI, Body
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
 import socket
 import uvicorn
 from typing import Dict, Optional
@@ -13,8 +16,13 @@ import board
 import busio
 from adafruit_pca9685 import PCA9685
 from adafruit_motor import servo
+from adafruit_ina219 import INA219
 
 app = FastAPI(title="Diamond Robot Controller")
+
+# Mount static files and templates
+app.mount("/static", StaticFiles(directory="webapp/static"), name="static")
+templates = Jinja2Templates(directory="webapp/templates")
 
 # Initialize hardware
 try:
@@ -29,11 +37,23 @@ try:
         if i not in [3, 7, 11, 15]:
             servos[i] = servo.Servo(pca.channels[i], min_pulse=500, max_pulse=2500)
 
+    # Initialize INA219 for battery monitoring
+    try:
+        ina219 = INA219(i2c)
+        battery_monitor_available = True
+        print("✓ Battery monitor initialized successfully")
+    except Exception as bat_err:
+        battery_monitor_available = False
+        ina219 = None
+        print(f"⚠ Battery monitor not available: {bat_err}")
+
     hardware_available = True
     print("✓ Hardware initialized successfully")
 except Exception as e:
     hardware_available = False
+    battery_monitor_available = False
     servos = {}
+    ina219 = None
     print(f"⚠ Hardware not available: {e}")
     print("  Running in simulation mode")
 
@@ -60,195 +80,64 @@ SERVO_NAMES = {
 # Store current servo positions
 servo_positions: Dict[int, int] = {i: 90 for i in range(16)}
 
-# HTML template for the control page
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Robot Controller</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1000px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .servo-row {
-            display: grid;
-            grid-template-columns: 60px 250px 1fr 60px;
-            gap: 15px;
-            align-items: center;
-            padding: 12px;
-            margin-bottom: 8px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-        }
-        .servo-row:hover {
-            background-color: #f0f0f0;
-        }
-        .channel {
-            font-weight: bold;
-            color: #666;
-            text-align: center;
-        }
-        .name {
-            color: #333;
-            font-size: 14px;
-        }
-        .slider {
-            width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            outline: none;
-            -webkit-appearance: none;
-            background: #ddd;
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #4CAF50;
-            cursor: pointer;
-        }
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #4CAF50;
-            cursor: pointer;
-            border: none;
-        }
-        .value {
-            font-weight: bold;
-            color: #4CAF50;
-            text-align: center;
-            min-width: 40px;
-        }
-        .empty {
-            opacity: 0.4;
-        }
-        .empty .slider {
-            pointer-events: none;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🤖 Diamond Servo Controller</h1>
-        <div id="servos"></div>
-    </div>
-
-    <script>
-        const servoNames = {
-            0: "Front Left - Lower Hip",
-            1: "Front Left - Upper Hip",
-            2: "Front Left - Shoulder",
-            3: "Front Left - (empty)",
-            4: "Back Left - Lower Hip",
-            5: "Back Left - Upper Hip",
-            6: "Back Left - Shoulder",
-            7: "Back Left - (empty)",
-            8: "Back Right - Lower Hip",
-            9: "Back Right - Upper Hip",
-            10: "Back Right - Shoulder",
-            11: "Back Right - (empty)",
-            12: "Front Right - Lower Hip",
-            13: "Front Right - Upper Hip",
-            14: "Front Right - Shoulder",
-            15: "Front Right - (empty)"
-        };
-
-        const servosContainer = document.getElementById('servos');
-
-        // Create servo controls
-        for (let i = 0; i < 16; i++) {
-            const row = document.createElement('div');
-            row.className = 'servo-row' + (servoNames[i].includes('empty') ? ' empty' : '');
-
-            const channel = document.createElement('div');
-            channel.className = 'channel';
-            channel.textContent = `CH ${i}`;
-
-            const name = document.createElement('div');
-            name.className = 'name';
-            name.textContent = servoNames[i];
-
-            const slider = document.createElement('input');
-            slider.type = 'range';
-            slider.min = 0;
-            slider.max = 180;
-            slider.value = 90;
-            slider.className = 'slider';
-            slider.id = `servo-${i}`;
-
-            const value = document.createElement('div');
-            value.className = 'value';
-            value.textContent = '90°';
-            value.id = `value-${i}`;
-
-            // Add event listener for real-time updates
-            slider.addEventListener('input', function() {
-                value.textContent = this.value + '°';
-            });
-
-            slider.addEventListener('change', async function() {
-                const channel = i;
-                const angle = parseInt(this.value);
-
-                try {
-                    const response = await fetch('/api/servo', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ channel, angle })
-                    });
-
-                    if (!response.ok) {
-                        console.error('Failed to set servo position');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            });
-
-            row.appendChild(channel);
-            row.appendChild(name);
-            row.appendChild(slider);
-            row.appendChild(value);
-            servosContainer.appendChild(row);
-        }
-    </script>
-</body>
-</html>
-"""
-
 @app.get("/", response_class=HTMLResponse)
-async def index():
+async def index(request: Request):
     """Serve the main control page"""
-    return HTML_TEMPLATE
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/api/status")
 async def status():
     """Return robot status"""
     return {"status": "ready", "message": "Diamond robot is ready"}
+
+@app.get("/api/battery")
+async def battery_status():
+    """Return battery status from INA219"""
+    if not battery_monitor_available or ina219 is None:
+        return {
+            "available": False,
+            "voltage": 0,
+            "current": 0,
+            "power": 0,
+            "status": "unavailable"
+        }
+
+    try:
+        bus_voltage = ina219.bus_voltage  # voltage on V- (load side)
+        shunt_voltage = ina219.shunt_voltage  # voltage between V+ and V-
+        current_ma = ina219.current  # current in mA
+        power_mw = ina219.power  # power in mW
+
+        # Total voltage is bus + shunt
+        voltage = bus_voltage + (shunt_voltage / 1000)
+        current_a = current_ma / 1000
+        power_w = power_mw / 1000
+
+        # Determine charging/discharging status
+        if current_a < -0.05:  # Negative = discharging
+            status = "discharging"
+        elif current_a > 0.05:  # Positive = charging
+            status = "charging"
+        else:
+            status = "idle"
+
+        return {
+            "available": True,
+            "voltage": round(voltage, 2),
+            "current": round(current_a, 3),
+            "power": round(power_w, 2),
+            "status": status
+        }
+    except Exception as e:
+        print(f"✗ Error reading battery status: {e}")
+        return {
+            "available": False,
+            "voltage": 0,
+            "current": 0,
+            "power": 0,
+            "status": "error",
+            "error": str(e)
+        }
 
 @app.post("/api/servo")
 async def set_servo(data: Dict = Body(...)):
@@ -307,4 +196,4 @@ if __name__ == '__main__':
     print(f"=" * 50)
     print(f"\nPress Ctrl+C to stop the server\n")
 
-    uvicorn.run(app, host='0.0.0.0', port=port)
+    uvicorn.run("webapp:app", host='0.0.0.0', port=port, reload=True)
