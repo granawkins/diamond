@@ -17,6 +17,8 @@ import busio
 from adafruit_pca9685 import PCA9685
 from adafruit_motor import servo
 from INA219 import INA219
+import markdown
+from pathlib import Path
 
 app = FastAPI(title="Diamond Robot Controller")
 
@@ -85,6 +87,29 @@ servo_positions: Dict[int, int] = {i: 90 for i in range(16)}
 async def index(request: Request):
     """Serve the main control page"""
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/docs/ups-hat", response_class=HTMLResponse)
+async def ups_hat_docs(request: Request):
+    """Serve the UPS HAT documentation page"""
+    docs_path = Path(__file__).parent / "docs" / "waveshare_ups_hat_b.md"
+
+    try:
+        with open(docs_path, 'r') as f:
+            md_content = f.read()
+
+        # Convert markdown to HTML
+        html_content = markdown.markdown(
+            md_content,
+            extensions=['fenced_code', 'tables', 'nl2br']
+        )
+
+        return templates.TemplateResponse("docs.html", {
+            "request": request,
+            "title": "Waveshare UPS HAT (B) Documentation",
+            "content": html_content
+        })
+    except Exception as e:
+        return HTMLResponse(f"<h1>Error loading documentation</h1><p>{e}</p>", status_code=500)
 
 @app.get("/api/status")
 async def status():

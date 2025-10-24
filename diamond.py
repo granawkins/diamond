@@ -78,6 +78,18 @@ class Diamond():
             self.reset()
             time.sleep(2)
 
+    def cleanup(self):
+        """
+        Cleanup method to safely shut down the robot.
+        Resets all servos to safe positions and deinitializes hardware.
+        """
+        print("Cleaning up Diamond robot...")
+        self.reset()
+        time.sleep(0.5)
+        # Deinitialize PCA9685
+        self.pca.deinit()
+        print("Cleanup complete.")
+
 if __name__ == "__main__":
     diamond = Diamond()
     diamond.dance(10)

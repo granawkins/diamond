@@ -10,7 +10,7 @@ Diamond is a quadruped robot running on Raspberry Pi 5 that controls MG90 servos
 
 - **Controller**: Raspberry Pi 5 with I2C on GPIO pins 1/3/5/9
 - **Power**: Waveshare UPS HAT (B) with two 18650 cells (8.4V charger). The HAT's 5V output (pin 2) connects directly to V+ on the PCA9685
-  - Wiki: https://www.waveshare.com/wiki/UPS_HAT_(B)
+  - Full documentation available in `docs/waveshare_ups_hat_b.md` (source: https://www.waveshare.com/wiki/UPS_HAT_(B))
   - Battery monitoring via I2C using INA219.py library
   - Provides voltage, current, power, and remaining capacity readings
   - Negative current = discharging (powering Pi), positive current = charging
