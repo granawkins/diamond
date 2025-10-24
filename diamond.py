@@ -3,6 +3,10 @@ import board, busio
 from adafruit_pca9685 import PCA9685
 from adafruit_motor import servo
 
+
+
+
+
 class Leg():
     def __init__(self, name, pca, lower_hip_channel, upper_hip_channel, shoulder_channel):
         self.name = name
