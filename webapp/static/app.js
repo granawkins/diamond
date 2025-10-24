@@ -85,6 +85,12 @@ async function updateBatteryStatus() {
         const data = await response.json();
 
         if (data.available) {
+            // Update percentage and bar
+            const percentage = data.percentage || 0;
+            document.getElementById('battery-percentage').textContent = percentage.toFixed(0) + '%';
+            document.getElementById('battery-bar').style.width = percentage + '%';
+
+            // Update detailed figures
             document.getElementById('battery-voltage').textContent = data.voltage + 'V';
             document.getElementById('battery-current').textContent = data.current + 'A';
             document.getElementById('battery-power').textContent = data.power + 'W';
@@ -93,6 +99,8 @@ async function updateBatteryStatus() {
             statusBadge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
             statusBadge.className = 'battery-status-badge status-' + data.status;
         } else {
+            document.getElementById('battery-percentage').textContent = '--%';
+            document.getElementById('battery-bar').style.width = '0%';
             document.getElementById('battery-voltage').textContent = '--';
             document.getElementById('battery-current').textContent = '--';
             document.getElementById('battery-power').textContent = '--';

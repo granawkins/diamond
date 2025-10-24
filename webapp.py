@@ -113,6 +113,12 @@ async def battery_status():
         current_a = current_ma / 1000
         power_w = power_mw / 1000
 
+        # Calculate percentage based on voltage (two 18650 cells)
+        # Voltage range: 6.0V (empty) to 8.4V (full)
+        min_voltage = 6.0
+        max_voltage = 8.4
+        percentage = max(0, min(100, ((voltage - min_voltage) / (max_voltage - min_voltage)) * 100))
+
         # Determine charging/discharging status
         if current_a < -0.05:  # Negative = discharging
             status = "discharging"
@@ -126,6 +132,7 @@ async def battery_status():
             "voltage": round(voltage, 2),
             "current": round(current_a, 3),
             "power": round(power_w, 2),
+            "percentage": round(percentage, 1),
             "status": status
         }
     except Exception as e:
