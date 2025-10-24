@@ -16,7 +16,7 @@ import board
 import busio
 from adafruit_pca9685 import PCA9685
 from adafruit_motor import servo
-from adafruit_ina219 import INA219
+from INA219 import INA219
 
 app = FastAPI(title="Diamond Robot Controller")
 
@@ -38,8 +38,9 @@ try:
             servos[i] = servo.Servo(pca.channels[i], min_pulse=500, max_pulse=2500)
 
     # Initialize INA219 for battery monitoring
+    # Note: Waveshare UPS HAT (B) uses I2C address 0x42
     try:
-        ina219 = INA219(i2c)
+        ina219 = INA219(addr=0x42)
         battery_monitor_available = True
         print("✓ Battery monitor initialized successfully")
     except Exception as bat_err:
@@ -103,18 +104,17 @@ async def battery_status():
         }
 
     try:
-        bus_voltage = ina219.bus_voltage  # voltage on V- (load side)
-        shunt_voltage = ina219.shunt_voltage  # voltage between V+ and V-
-        current_ma = ina219.current  # current in mA
-        power_mw = ina219.power  # power in mW
+        # Use Waveshare INA219 methods (different from Adafruit library)
+        bus_voltage = ina219.getBusVoltage_V()  # Battery voltage (6.0-8.4V for 2x18650)
+        current_ma = ina219.getCurrent_mA()  # Current in mA
+        power_w = ina219.getPower_W()  # Power in W
 
-        # Total voltage is bus + shunt
-        voltage = bus_voltage + (shunt_voltage / 1000)
+        voltage = bus_voltage
         current_a = current_ma / 1000
-        power_w = power_mw / 1000
 
-        # Calculate percentage based on voltage (two 18650 cells)
+        # Calculate percentage based on voltage (two 18650 cells in series)
         # Voltage range: 6.0V (empty) to 8.4V (full)
+        # Formula from Waveshare: (voltage - 6.0) / 2.4 * 100
         min_voltage = 6.0
         max_voltage = 8.4
         percentage = max(0, min(100, ((voltage - min_voltage) / (max_voltage - min_voltage)) * 100))
@@ -131,7 +131,7 @@ async def battery_status():
             "available": True,
             "voltage": round(voltage, 2),
             "current": round(current_a, 3),
-            "power": round(power_w, 2),
+            "power": round(power_w, 3),
             "percentage": round(percentage, 1),
             "status": status
         }

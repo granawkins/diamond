@@ -1,6 +1,6 @@
 adafruit-circuitpython-motor==3.4.17
 adafruit-circuitpython-pca9685==3.4.19
-adafruit-circuitpython-ina219
+smbus2
 fastapi
 uvicorn[standard]
 jinja2
