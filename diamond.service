@@ -1,5 +1,5 @@
 [Unit]
-Description=Diamond Robot Web Controller
+Description=Diamond Robot Controller
 After=network.target
 
 [Service]
@@ -7,7 +7,7 @@ Type=simple
 User=admin
 WorkingDirectory=/home/admin/diamond
 Environment="PATH=/home/admin/diamond/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/home/admin/diamond/.venv/bin/python /home/admin/diamond/webapp.py
+ExecStart=/home/admin/diamond/.venv/bin/python /home/admin/diamond/diamond.py
 Restart=always
 RestartSec=10
 
