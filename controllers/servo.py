@@ -37,12 +37,19 @@ class Servo:
             max_pulse=MAX_PULSE
         )
         self._angle = 90
+        self._45_deg = config["45_deg"]
+        self._135_deg = config["135_deg"]
 
     @property
     def angle(self):
         return self._angle
 
     @angle.setter
-    def angle(self, value):
-        self.servo.angle = value
-        self._angle = value
+    def angle(self, value, calibrate=True):
+        if calibrate:
+            # interpolate between 45_deg and 135_deg
+            angle = self._45_deg + (self._135_deg - self._45_deg) * (value - 45) / 90
+        else:
+            angle = value
+        self.servo.angle = angle
+        self._angle = angle
