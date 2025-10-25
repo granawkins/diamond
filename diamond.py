@@ -44,7 +44,7 @@ server_thread.start()
 xbox_thread = threading.Thread(target=xbox.run, daemon=True)
 xbox_thread.start()
 
-# Main loop at 1Hz
+hz = 20
 while True:
     process_queue()
-    time.sleep(1)
+    time.sleep(1/hz)
