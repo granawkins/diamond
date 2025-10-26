@@ -42,12 +42,12 @@ class Leg:
         self.reset()
 
     def reset(self):
-        self.angles(*self.config["rest"])
+        self.angles = self.config["rest"]
 
     @property
     def angles(self):
         return self.lower_hip.angle, self.upper_hip.angle, self.shoulder.angle
-    
+
     @angles.setter
     def angles(self, angles):
         self.lower_hip.angle = angles[0]
