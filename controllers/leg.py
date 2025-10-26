@@ -53,12 +53,12 @@ class Leg:
     def up(self):
         x, y, z = self.angles
         value = -5 if "right" in self.name else 5
-        self.angles = (x+value, y+value, z+value)
+        self.angles = (x+value, y-value, z)
 
     def down(self):
         x, y, z = self.angles
         value = -5 if "right" in self.name else 5
-        self.angles = (x-value, y-value, z-value)
+        self.angles = (x-value, y+value, z)
 
     def forward_kinematics(self, shoulder_angle, upper_hip_angle, lower_hip_angle):
         pass

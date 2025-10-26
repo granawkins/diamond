@@ -18,17 +18,17 @@
         </div>
 
         <div class="global-controls">
-            <button class="global-btn reset-btn" onclick="resetAll()">Reset All</button>
-            <button class="global-btn up-btn" onclick="command('up')">Up</button>
-            <button class="global-btn down-btn" onclick="command('down')">Down</button>
+            <button class="global-btn reset-btn" onclick="sendCommand('reset')">Reset All</button>
+            <button class="global-btn up-btn" onclick="sendCommand('up')">Up</button>
+            <button class="global-btn down-btn" onclick="sendCommand('down')">Down</button>
         </div>
 
         <div class="legs-grid">
             <div class="leg-control" id="front_left">
                 <div class="leg-header">
                     <span class="leg-name">Front Left</span>
-                    <button class="reset-btn" onclick="commandLeg('front_left', 'reset')">Reset</button>
-                    <button class="up-btn" onclick="commandLeg('front_left', 'up')">Up</button>
+                    <button class="reset-btn">Reset</button>
+                    <button class="up-btn">Up</button>
                 </div>
                 <div class="servo-control">
                     <label>Lower Hip: <span id="front_left_lower_hip_val">90°</span></label>
@@ -47,8 +47,8 @@
             <div class="leg-control" id="front_right">
                 <div class="leg-header">
                     <span class="leg-name">Front Right</span>
-                    <button class="reset-btn" onclick="commandLeg('front_right', 'reset')">Reset</button>
-                    <button class="up-btn" onclick="commandLeg('front_right', 'up')">Up</button>
+                    <button class="reset-btn">Reset</button>
+                    <button class="up-btn">Up</button>
                 </div>
                 <div class="servo-control">
                     <label>Lower Hip: <span id="front_right_lower_hip_val">90°</span></label>
@@ -67,8 +67,8 @@
             <div class="leg-control" id="back_left">
                 <div class="leg-header">
                     <span class="leg-name">Back Left</span>
-                    <button class="reset-btn" onclick="commandLeg('back_left', 'reset')">Reset</button>
-                    <button class="up-btn" onclick="commandLeg('back_left', 'up')">Up</button>
+                    <button class="reset-btn">Reset</button>
+                    <button class="up-btn">Up</button>
                 </div>
                 <div class="servo-control">
                     <label>Lower Hip: <span id="back_left_lower_hip_val">90°</span></label>
@@ -87,8 +87,8 @@
             <div class="leg-control" id="back_right">
                 <div class="leg-header">
                     <span class="leg-name">Back Right</span>
-                    <button class="reset-btn" onclick="commandLeg('back_right', 'reset')">Reset</button>
-                    <button class="up-btn" onclick="commandLeg('back_right', 'up')">Up</button>
+                    <button class="reset-btn">Reset</button>
+                    <button class="up-btn">Up</button>
                 </div>
                 <div class="servo-control">
                     <label>Lower Hip: <span id="back_right_lower_hip_val">90°</span></label>
