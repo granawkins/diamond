@@ -7,28 +7,28 @@ LEG_CONFIG = {
         "upper_hip": 1,
         "shoulder": 2,
         "reset": [52, 85, 84],
-        "up": [42, 85, 84],
+        "up": [42, 65, 84],
     },
     "back_left": {
         "lower_hip": 4,
         "upper_hip": 5,
         "shoulder": 6,
         "reset": [49, 80, 95],
-        "up": [39, 80, 95],
+        "up": [39, 60, 95],
     },
     "back_right": {
         "lower_hip": 8,
         "upper_hip": 9,
         "shoulder": 10,
         "reset": [128, 88, 97],
-        "up": [138, 88, 97],
+        "up": [138, 68, 97],
     },
     "front_right": {
         "lower_hip": 12,
         "upper_hip": 13,
         "shoulder": 14,
         "reset": [129, 90, 75],
-        "up": [139, 90, 75],
+        "up": [139, 70, 75],
     },
 }
 
