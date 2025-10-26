@@ -2,23 +2,25 @@ import time
 import queue
 import threading
 from controllers import pca, battery
-from controllers.servo import Servo, SERVO_CONFIG
+from controllers.leg import Leg
 from subscribers import server, xbox
 
 # Initialize 12 servos (skip channels 3, 7, 11, 15)
-servos = {}
-for channel in SERVO_CONFIG.keys():
-    servo = Servo(channel, pca.pca)
-    servos[servo.name] = servo
+legs = {
+    "front_left": Leg("front_left", pca.pca),
+    "back_left": Leg("back_left", pca.pca),
+    "back_right": Leg("back_right", pca.pca),
+    "front_right": Leg("front_right", pca.pca),
+}
 
 command_queue = queue.Queue()
 
 def status():
     """Return current angles and battery stats"""
-    servo_angles = {name: s.angle for name, s in servos.items()}
+    legs_status = {name: l.angles for name, l in legs.items()}
     battery_status = battery.status()
     return {
-        "servos": servo_angles,
+        "legs": legs_status,
         "battery": battery_status
     }
 
@@ -30,10 +32,13 @@ def process_queue():
     """Process all commands in queue"""
     while not command_queue.empty():
         cmd = command_queue.get()
-        servo_name = cmd.get("servo_name")
-        angle = cmd.get("angle")
-        if servo_name in servos:
-            servos[servo_name].angle = angle
+        leg_name = cmd.get("leg_name")
+        if leg_name not in legs:
+            print(f"Invalid leg name: {leg_name}")
+        elif "angles" in cmd:
+            legs[leg_name].angles = cmd.get("angles")
+        elif "reset" in cmd:
+            legs[leg_name].reset()
 
 # Initialize and start server
 server.init(status, command)

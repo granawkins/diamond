@@ -29,26 +29,12 @@ async def get_status():
 async def get_battery():
     return status_func()["battery"]
 
-@app.post("/api/servo")
-async def set_servo(data: dict = Body(...)):
-    channel = data.get("channel")
-    angle = data.get("angle")
-
-    if channel is None or angle is None:
-        return {"error": "Missing channel or angle"}
-
-    if channel not in CHANNEL_TO_NAME:
-        return {"error": "Invalid channel"}
-
-    servo_name = CHANNEL_TO_NAME[channel]
-    command_func({"servo_name": servo_name, "angle": angle})
-
-    return {
-        "success": True,
-        "channel": channel,
-        "angle": angle,
-        "name": servo_name
-    }
+@app.post("/api/leg")
+async def set_leg(data: dict = Body(...)):
+    leg_name = data.get("leg_name")
+    angles = data.get("angles")
+    command_func({"leg_name": leg_name, "angles": angles})
+    return {"success": True}
 
 def run():
     uvicorn.run(app, host='0.0.0.0', port=8000)

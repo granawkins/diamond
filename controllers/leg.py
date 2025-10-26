@@ -44,10 +44,15 @@ class Leg:
     def reset(self):
         self.angles(*self.config["rest"])
 
-    def angles(self, lower_hip_angle, upper_hip_angle, shoulder_angle):
-        self.lower_hip.angle = lower_hip_angle
-        self.upper_hip.angle = upper_hip_angle
-        self.shoulder.angle = shoulder_angle
+    @property
+    def angles(self):
+        return self.lower_hip.angle, self.upper_hip.angle, self.shoulder.angle
+    
+    @angles.setter
+    def angles(self, angles):
+        self.lower_hip.angle = angles[0]
+        self.upper_hip.angle = angles[1]
+        self.shoulder.angle = angles[2]
 
     def forward_kinematics(self, shoulder_angle, upper_hip_angle, lower_hip_angle):
         pass
