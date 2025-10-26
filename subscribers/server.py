@@ -3,7 +3,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 import uvicorn
-from controllers.servo import CHANNEL_TO_NAME, SERVO_CONFIG
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="subscribers/webapp/static"), name="static")

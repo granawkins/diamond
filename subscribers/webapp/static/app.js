@@ -1,111 +1,92 @@
-const servoNames = {
-    0: "Front Left - Lower Hip",
-    1: "Front Left - Upper Hip",
-    2: "Front Left - Shoulder",
-    3: "Front Left - (empty)",
-    4: "Back Left - Lower Hip",
-    5: "Back Left - Upper Hip",
-    6: "Back Left - Shoulder",
-    7: "Back Left - (empty)",
-    8: "Back Right - Lower Hip",
-    9: "Back Right - Upper Hip",
-    10: "Back Right - Shoulder",
-    11: "Back Right - (empty)",
-    12: "Front Right - Lower Hip",
-    13: "Front Right - Upper Hip",
-    14: "Front Right - Shoulder",
-    15: "Front Right - (empty)"
+const REST_POSITIONS = {
+    front_left: [52, 85, 84],
+    back_left: [49, 80, 95],
+    back_right: [128, 88, 97],
+    front_right: [129, 90, 75]
 };
 
-const servosContainer = document.getElementById('servos');
+const SERVO_ORDER = ['lower_hip', 'upper_hip', 'shoulder'];
 
-// Create servo controls
-for (let i = 0; i < 16; i++) {
-    const row = document.createElement('div');
-    row.className = 'servo-row' + (servoNames[i].includes('empty') ? ' empty' : '');
+// Store current angles for each leg
+const legAngles = {
+    front_left: [90, 90, 90],
+    front_right: [90, 90, 90],
+    back_left: [90, 90, 90],
+    back_right: [90, 90, 90]
+};
 
-    const channel = document.createElement('div');
-    channel.className = 'channel';
-    channel.textContent = `CH ${i}`;
-
-    const name = document.createElement('div');
-    name.className = 'name';
-    name.textContent = servoNames[i];
-
-    const slider = document.createElement('input');
-    slider.type = 'range';
-    slider.min = 0;
-    slider.max = 180;
-    slider.value = 90;
-    slider.className = 'slider';
-    slider.id = `servo-${i}`;
-
-    const value = document.createElement('div');
-    value.className = 'value';
-    value.textContent = '90°';
-    value.id = `value-${i}`;
-
-    // Add event listener for real-time updates
+// Handle slider input (real-time display update)
+document.querySelectorAll('.slider').forEach(slider => {
     slider.addEventListener('input', function() {
-        value.textContent = this.value + '°';
+        const leg = this.dataset.leg;
+        const servo = this.dataset.servo;
+        const value = this.value;
+
+        document.getElementById(`${leg}_${servo}_val`).textContent = value + '°';
     });
 
     slider.addEventListener('change', async function() {
-        const channel = i;
-        const angle = parseInt(this.value);
+        const leg = this.dataset.leg;
+        const servo = this.dataset.servo;
+        const value = parseInt(this.value);
 
-        try {
-            const response = await fetch('/api/servo', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ channel, angle })
-            });
+        // Update stored angle
+        const servoIndex = SERVO_ORDER.indexOf(servo);
+        legAngles[leg][servoIndex] = value;
 
-            if (!response.ok) {
-                console.error('Failed to set servo position');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
+        // Send to API
+        await sendLegCommand(leg, legAngles[leg]);
     });
+});
 
-    row.appendChild(channel);
-    row.appendChild(name);
-    row.appendChild(slider);
-    row.appendChild(value);
-    servosContainer.appendChild(row);
+async function sendLegCommand(legName, angles) {
+    try {
+        const response = await fetch('/api/leg', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ leg_name: legName, angles: angles })
+        });
+
+        if (!response.ok) {
+            console.error('Failed to set leg position');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
-// Battery status update function
+async function resetLeg(legName) {
+    const restAngles = REST_POSITIONS[legName];
+
+    // Update UI
+    SERVO_ORDER.forEach((servo, index) => {
+        const slider = document.querySelector(`[data-leg="${legName}"][data-servo="${servo}"]`);
+        slider.value = restAngles[index];
+        document.getElementById(`${legName}_${servo}_val`).textContent = restAngles[index] + '°';
+    });
+
+    // Update stored angles
+    legAngles[legName] = [...restAngles];
+
+    // Send to API
+    await sendLegCommand(legName, restAngles);
+}
+
+// Battery status update
 async function updateBatteryStatus() {
     try {
         const response = await fetch('/api/battery');
         const data = await response.json();
 
         if (data.available) {
-            // Update percentage and bar
             const percentage = data.percentage || 0;
             document.getElementById('battery-percentage').textContent = percentage.toFixed(0) + '%';
             document.getElementById('battery-bar').style.width = percentage + '%';
-
-            // Update detailed figures
-            document.getElementById('battery-voltage').textContent = data.voltage + 'V';
-            document.getElementById('battery-current').textContent = data.current + 'A';
-            document.getElementById('battery-power').textContent = data.power + 'W';
-
-            const statusBadge = document.getElementById('battery-status');
-            statusBadge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
-            statusBadge.className = 'battery-status-badge status-' + data.status;
         } else {
             document.getElementById('battery-percentage').textContent = '--%';
             document.getElementById('battery-bar').style.width = '0%';
-            document.getElementById('battery-voltage').textContent = '--';
-            document.getElementById('battery-current').textContent = '--';
-            document.getElementById('battery-power').textContent = '--';
-            document.getElementById('battery-status').textContent = 'Unavailable';
-            document.getElementById('battery-status').className = 'battery-status-badge status-unavailable';
         }
     } catch (error) {
         console.error('Error fetching battery status:', error);

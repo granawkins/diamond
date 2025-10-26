@@ -1,178 +1,121 @@
 body {
-    font-family: Arial, sans-serif;
-    max-width: 1000px;
+    font-family: monospace;
+    max-width: 800px;
     margin: 20px auto;
     padding: 20px;
-    background-color: #f0f0f0;
+    background: #000;
+    color: #0f0;
 }
 
 .container {
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    background: #111;
+    padding: 20px;
+    border: 1px solid #0f0;
 }
 
 h1 {
-    color: #333;
     text-align: center;
-    margin-bottom: 30px;
-}
-
-.servo-row {
-    display: grid;
-    grid-template-columns: 60px 250px 1fr 60px;
-    gap: 15px;
-    align-items: center;
-    padding: 12px;
-    margin-bottom: 8px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    transition: background-color 0.2s;
-}
-
-.servo-row:hover {
-    background-color: #f0f0f0;
-}
-
-.channel {
-    font-weight: bold;
-    color: #666;
-    text-align: center;
-}
-
-.name {
-    color: #333;
-    font-size: 14px;
-}
-
-.slider {
-    width: 100%;
-    height: 8px;
-    border-radius: 5px;
-    outline: none;
-    -webkit-appearance: none;
-    background: #ddd;
-}
-
-.slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #4CAF50;
-    cursor: pointer;
-}
-
-.slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #4CAF50;
-    cursor: pointer;
-    border: none;
-}
-
-.value {
-    font-weight: bold;
-    color: #4CAF50;
-    text-align: center;
-    min-width: 40px;
-}
-
-.empty {
-    opacity: 0.4;
-}
-
-.empty .slider {
-    pointer-events: none;
+    margin: 0 0 20px 0;
+    font-size: 24px;
 }
 
 .battery-status {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-.battery-status h2 {
-    margin: 0 0 15px 0;
-    font-size: 18px;
-    font-weight: normal;
-    opacity: 0.9;
-}
-
-.battery-container {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-}
-
-.battery-main {
-    flex: 1;
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #0f0;
+    background: #000;
 }
 
 .battery-percentage {
-    font-size: 48px;
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-size: 24px;
     text-align: center;
+    margin-bottom: 5px;
 }
 
 .battery-bar-container {
-    background: rgba(255,255,255,0.2);
-    height: 40px;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+    height: 20px;
+    background: #222;
+    border: 1px solid #0f0;
 }
 
 .battery-bar {
     height: 100%;
-    background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
-    border-radius: 20px;
+    background: #0f0;
     transition: width 0.5s ease;
-    box-shadow: 0 0 10px rgba(255,255,255,0.3);
 }
 
-.battery-details {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 150px;
+.legs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
 }
 
-.battery-detail-item {
+.leg-control {
+    border: 1px solid #0f0;
+    padding: 15px;
+    background: #000;
+}
+
+.leg-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 12px;
-    opacity: 0.9;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #0f0;
 }
 
-.battery-detail-label {
-    opacity: 0.7;
-    margin-right: 10px;
-}
-
-.battery-detail-value {
-    font-weight: bold;
+.leg-name {
     font-size: 14px;
-}
-
-.battery-status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 11px;
     font-weight: bold;
-    background: rgba(255,255,255,0.25);
 }
 
-.status-charging { background: #4CAF50; }
-.status-discharging { background: #FF9800; }
-.status-idle { background: #2196F3; }
-.status-unavailable { background: #666; }
+.reset-btn {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.reset-btn:hover {
+    background: #0f0;
+    color: #000;
+}
+
+.servo-control {
+    margin-bottom: 10px;
+}
+
+.servo-control label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.slider {
+    width: 100%;
+    height: 5px;
+    background: #222;
+    outline: none;
+    -webkit-appearance: none;
+    border: 1px solid #0f0;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #0f0;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background: #0f0;
+    cursor: pointer;
+    border: none;
+}

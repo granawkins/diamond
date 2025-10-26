@@ -8,44 +8,92 @@
 </head>
 <body>
     <div class="container">
-        <h1>🤖 Diamond Servo Controller</h1>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-            <a href="/docs/ups-hat" style="display: inline-block; padding: 8px 16px; background: rgba(76, 175, 80, 0.2); color: #4CAF50; text-decoration: none; border-radius: 5px; border: 1px solid #4CAF50;">
-                📚 UPS HAT Documentation
-            </a>
-        </div>
+        <h1>Diamond</h1>
 
         <div class="battery-status" id="battery">
-            <h2>🔋 Battery Status</h2>
-            <div class="battery-container">
-                <div class="battery-main">
-                    <div class="battery-percentage" id="battery-percentage">--%</div>
-                    <div class="battery-bar-container">
-                        <div class="battery-bar" id="battery-bar"></div>
-                    </div>
-                </div>
-                <div class="battery-details">
-                    <div class="battery-detail-item">
-                        <span class="battery-detail-label">Voltage:</span>
-                        <span class="battery-detail-value" id="battery-voltage">--</span>
-                    </div>
-                    <div class="battery-detail-item">
-                        <span class="battery-detail-label">Current:</span>
-                        <span class="battery-detail-value" id="battery-current">--</span>
-                    </div>
-                    <div class="battery-detail-item">
-                        <span class="battery-detail-label">Power:</span>
-                        <span class="battery-detail-value" id="battery-power">--</span>
-                    </div>
-                    <div class="battery-detail-item">
-                        <span class="battery-status-badge status-unavailable" id="battery-status">Loading...</span>
-                    </div>
-                </div>
+            <div class="battery-percentage" id="battery-percentage">--%</div>
+            <div class="battery-bar-container">
+                <div class="battery-bar" id="battery-bar"></div>
             </div>
         </div>
 
-        <div id="servos"></div>
+        <div class="legs-grid">
+            <div class="leg-control" id="front_left">
+                <div class="leg-header">
+                    <span class="leg-name">Front Left</span>
+                    <button class="reset-btn" onclick="resetLeg('front_left')">Reset</button>
+                </div>
+                <div class="servo-control">
+                    <label>Lower Hip: <span id="front_left_lower_hip_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="front_left" data-servo="lower_hip">
+                </div>
+                <div class="servo-control">
+                    <label>Upper Hip: <span id="front_left_upper_hip_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="front_left" data-servo="upper_hip">
+                </div>
+                <div class="servo-control">
+                    <label>Shoulder: <span id="front_left_shoulder_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="front_left" data-servo="shoulder">
+                </div>
+            </div>
+
+            <div class="leg-control" id="front_right">
+                <div class="leg-header">
+                    <span class="leg-name">Front Right</span>
+                    <button class="reset-btn" onclick="resetLeg('front_right')">Reset</button>
+                </div>
+                <div class="servo-control">
+                    <label>Lower Hip: <span id="front_right_lower_hip_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="front_right" data-servo="lower_hip">
+                </div>
+                <div class="servo-control">
+                    <label>Upper Hip: <span id="front_right_upper_hip_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="front_right" data-servo="upper_hip">
+                </div>
+                <div class="servo-control">
+                    <label>Shoulder: <span id="front_right_shoulder_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="front_right" data-servo="shoulder">
+                </div>
+            </div>
+
+            <div class="leg-control" id="back_left">
+                <div class="leg-header">
+                    <span class="leg-name">Back Left</span>
+                    <button class="reset-btn" onclick="resetLeg('back_left')">Reset</button>
+                </div>
+                <div class="servo-control">
+                    <label>Lower Hip: <span id="back_left_lower_hip_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="back_left" data-servo="lower_hip">
+                </div>
+                <div class="servo-control">
+                    <label>Upper Hip: <span id="back_left_upper_hip_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="back_left" data-servo="upper_hip">
+                </div>
+                <div class="servo-control">
+                    <label>Shoulder: <span id="back_left_shoulder_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="back_left" data-servo="shoulder">
+                </div>
+            </div>
+
+            <div class="leg-control" id="back_right">
+                <div class="leg-header">
+                    <span class="leg-name">Back Right</span>
+                    <button class="reset-btn" onclick="resetLeg('back_right')">Reset</button>
+                </div>
+                <div class="servo-control">
+                    <label>Lower Hip: <span id="back_right_lower_hip_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="back_right" data-servo="lower_hip">
+                </div>
+                <div class="servo-control">
+                    <label>Upper Hip: <span id="back_right_upper_hip_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="back_right" data-servo="upper_hip">
+                </div>
+                <div class="servo-control">
+                    <label>Shoulder: <span id="back_right_shoulder_val">90°</span></label>
+                    <input type="range" min="0" max="180" value="90" class="slider" data-leg="back_right" data-servo="shoulder">
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="/static/app.js"></script>
