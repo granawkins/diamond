@@ -22,17 +22,20 @@ async def index(request: Request):
 
 @app.get("/api/status")
 async def get_status():
-    return {"status": "ready", "message": "Diamond robot is ready"}
-
-@app.get("/api/battery")
-async def get_battery():
-    return status_func()["battery"]
+    return status_func()
 
 @app.post("/api/leg")
 async def set_leg(data: dict = Body(...)):
     leg_name = data.get("leg_name")
     angles = data.get("angles")
     command_func({"leg_name": leg_name, "angles": angles})
+    return {"success": True}
+
+@app.post("/api/command")
+async def execute_command(data: dict = Body(...)):
+    leg_name = data.get("leg_name")
+    command = data.get("command")
+    command_func({"leg_name": leg_name, "command": command})
     return {"success": True}
 
 def run():

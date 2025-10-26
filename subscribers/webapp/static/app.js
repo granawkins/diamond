@@ -1,10 +1,3 @@
-const REST_POSITIONS = {
-    front_left: [52, 85, 84],
-    back_left: [49, 80, 95],
-    back_right: [128, 88, 97],
-    front_right: [129, 90, 75]
-};
-
 const SERVO_ORDER = ['lower_hip', 'upper_hip', 'shoulder'];
 
 // Store current angles for each leg
@@ -20,7 +13,7 @@ document.querySelectorAll('.slider').forEach(slider => {
     slider.addEventListener('input', function() {
         const leg = this.dataset.leg;
         const servo = this.dataset.servo;
-        const value = this.value;
+        const value = Math.round(this.value);
 
         document.getElementById(`${leg}_${servo}_val`).textContent = value + '°';
     });
@@ -57,42 +50,74 @@ async function sendLegCommand(legName, angles) {
     }
 }
 
-async function resetLeg(legName) {
-    const restAngles = REST_POSITIONS[legName];
+async function commandLeg(legName, command) {
+    try {
+        const response = await fetch('/api/command', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ leg_name: legName, command: command })
+        });
 
-    // Update UI
-    SERVO_ORDER.forEach((servo, index) => {
-        const slider = document.querySelector(`[data-leg="${legName}"][data-servo="${servo}"]`);
-        slider.value = restAngles[index];
-        document.getElementById(`${legName}_${servo}_val`).textContent = restAngles[index] + '°';
-    });
-
-    // Update stored angles
-    legAngles[legName] = [...restAngles];
-
-    // Send to API
-    await sendLegCommand(legName, restAngles);
+        if (!response.ok) {
+            console.error('Failed to execute command');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
-// Battery status update
-async function updateBatteryStatus() {
+async function resetAll() {
+    const legs = ['front_left', 'front_right', 'back_left', 'back_right'];
+    for (const leg of legs) {
+        await commandLeg(leg, 'reset');
+    }
+}
+
+async function upAll() {
+    const legs = ['front_left', 'front_right', 'back_left', 'back_right'];
+    for (const leg of legs) {
+        await commandLeg(leg, 'up');
+    }
+}
+
+// Update status (battery and leg positions)
+async function updateStatus() {
     try {
-        const response = await fetch('/api/battery');
+        const response = await fetch('/api/status');
         const data = await response.json();
 
-        if (data.available) {
-            const percentage = data.percentage || 0;
+        // Update battery
+        if (data.battery && data.battery.available) {
+            const percentage = data.battery.percentage || 0;
             document.getElementById('battery-percentage').textContent = percentage.toFixed(0) + '%';
             document.getElementById('battery-bar').style.width = percentage + '%';
         } else {
             document.getElementById('battery-percentage').textContent = '--%';
             document.getElementById('battery-bar').style.width = '0%';
         }
+
+        // Update leg positions
+        if (data.legs) {
+            Object.keys(data.legs).forEach(legName => {
+                const angles = data.legs[legName];
+                legAngles[legName] = angles;
+
+                SERVO_ORDER.forEach((servo, index) => {
+                    const slider = document.querySelector(`[data-leg="${legName}"][data-servo="${servo}"]`);
+                    if (slider) {
+                        slider.value = angles[index];
+                        document.getElementById(`${legName}_${servo}_val`).textContent = Math.round(angles[index]) + '°';
+                    }
+                });
+            });
+        }
     } catch (error) {
-        console.error('Error fetching battery status:', error);
+        console.error('Error fetching status:', error);
     }
 }
 
-// Update battery status on load and every 2 seconds
-updateBatteryStatus();
-setInterval(updateBatteryStatus, 2000);
+// Update status on load and every 2 seconds
+updateStatus();
+setInterval(updateStatus, 2000);

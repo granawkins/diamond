@@ -37,8 +37,14 @@ def process_queue():
             print(f"Invalid leg name: {leg_name}")
         elif "angles" in cmd:
             legs[leg_name].angles = cmd.get("angles")
-        elif "reset" in cmd:
-            legs[leg_name].reset()
+        elif "command" in cmd:
+            command_name = cmd.get("command")
+            if command_name == "reset":
+                legs[leg_name].reset()
+            elif command_name == "up":
+                legs[leg_name].up()
+            else:
+                print(f"Invalid command: {command_name}")
 
 # Initialize and start server
 server.init(status, command)

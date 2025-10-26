@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Code Style
+
+- Keep edits simple and concise
+- Comments should be ~20% of baseline code volume
+- Avoid over-documentation
+
 ## Project Overview
 
 Diamond is a quadruped robot running on Raspberry Pi 5 that controls MG90 servos through a PCA9685 PWM controller via I2C.
@@ -30,8 +36,11 @@ pip install -r requirements.txt
 # Test single servo
 python servo-test.py
 
-# Run robot
+# Run robot manually
 python diamond.py
+
+# Auto-starts on boot via diamond.service (systemd)
+# If renaming diamond.py, update diamond.service and reinstall
 ```
 
 ## Code Structure

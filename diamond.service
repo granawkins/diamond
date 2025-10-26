@@ -1,3 +1,9 @@
+# This service is installed in systemd at /etc/systemd/system/diamond.service
+# IMPORTANT: If diamond.py is renamed, update ExecStart below and reinstall:
+#   sudo cp diamond.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl restart diamond.service
+
 [Unit]
 Description=Diamond Robot Controller
 After=network.target
