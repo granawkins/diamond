@@ -27,7 +27,7 @@ async def get_status():
 @app.post("/api/command")
 async def execute_command(data: dict = Body(...)):
     command = data.get("command")
-    command_func({"command": command})
+    command_func(command)
     return {"success": True}
 
 def run():

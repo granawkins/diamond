@@ -1,13 +1,5 @@
 const SERVO_ORDER = ['lower_hip', 'upper_hip', 'shoulder'];
 
-// Store current angles for each leg
-const legAngles = {
-    front_left: [90, 90, 90],
-    front_right: [90, 90, 90],
-    back_left: [90, 90, 90],
-    back_right: [90, 90, 90]
-};
-
 async function command(command) {
     try {
         const response = await fetch('/api/command', {
