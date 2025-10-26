@@ -1,23 +1,17 @@
 import time
 import queue
 import threading
-from controllers import pca, battery
-from controllers.leg import Leg
+from controllers import battery
+from controllers.body import Body
 from subscribers import server, xbox
-
-# Initialize 12 servos (skip channels 3, 7, 11, 15)
-legs = {
-    "front_left": Leg("front_left", pca.pca),
-    "back_left": Leg("back_left", pca.pca),
-    "back_right": Leg("back_right", pca.pca),
-    "front_right": Leg("front_right", pca.pca),
-}
 
 command_queue = queue.Queue()
 
+body = Body()
+
 def status():
     """Return current angles and battery stats"""
-    legs_status = {name: l.angles for name, l in legs.items()}
+    legs_status = {name: l.angles for name, l in body.legs.items()}
     battery_status = battery.status()
     return {
         "legs": legs_status,
@@ -32,19 +26,14 @@ def process_queue():
     """Process all commands in queue"""
     while not command_queue.empty():
         cmd = command_queue.get()
-        leg_name = cmd.get("leg_name")
-        if leg_name not in legs:
-            print(f"Invalid leg name: {leg_name}")
-        elif "angles" in cmd:
-            legs[leg_name].angles = cmd.get("angles")
-        elif "command" in cmd:
-            command_name = cmd.get("command")
-            if command_name == "reset":
-                legs[leg_name].reset()
-            elif command_name == "up":
-                legs[leg_name].up()
-            else:
-                print(f"Invalid command: {command_name}")
+        if cmd == "reset":
+            body.reset()
+        elif cmd == "up":
+            body.up()
+        elif cmd == "down":
+            body.down()
+        else:
+            print(f"Invalid command: {cmd}")
 
 # Initialize and start server
 server.init(status, command)

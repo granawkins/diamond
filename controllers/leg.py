@@ -6,29 +6,21 @@ LEG_CONFIG = {
         "lower_hip": 0,
         "upper_hip": 1,
         "shoulder": 2,
-        "reset": [52, 85, 84],
-        "up": [52, 75, 84],
     },
     "back_left": {
         "lower_hip": 4,
         "upper_hip": 5,
         "shoulder": 6,
-        "reset": [49, 80, 95],
-        "up": [49, 70, 95],
     },
     "back_right": {
         "lower_hip": 8,
         "upper_hip": 9,
         "shoulder": 10,
-        "reset": [128, 88, 97],
-        "up": [128, 98, 97],
     },
     "front_right": {
         "lower_hip": 12,
         "upper_hip": 13,
         "shoulder": 14,
-        "reset": [129, 90, 75],
-        "up": [129, 100, 75],
     },
 }
 
@@ -56,10 +48,17 @@ class Leg:
         self.shoulder.angle = angles[2]
 
     def reset(self):
-        self.angles = self.config["reset"]
+        self.angles = (90, 90, 90)
 
     def up(self):
-        self.angles = self.config["up"]
+        x, y, z = self.angles
+        value = -5 if "right" in self.name else 5
+        self.angles = (x+value, y+value, z+value)
+
+    def down(self):
+        x, y, z = self.angles
+        value = -5 if "right" in self.name else 5
+        self.angles = (x-value, y-value, z-value)
 
     def forward_kinematics(self, shoulder_angle, upper_hip_angle, lower_hip_angle):
         pass

@@ -24,18 +24,10 @@ async def index(request: Request):
 async def get_status():
     return status_func()
 
-@app.post("/api/leg")
-async def set_leg(data: dict = Body(...)):
-    leg_name = data.get("leg_name")
-    angles = data.get("angles")
-    command_func({"leg_name": leg_name, "angles": angles})
-    return {"success": True}
-
 @app.post("/api/command")
 async def execute_command(data: dict = Body(...)):
-    leg_name = data.get("leg_name")
     command = data.get("command")
-    command_func({"leg_name": leg_name, "command": command})
+    command_func({"command": command})
     return {"success": True}
 
 def run():
