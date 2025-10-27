@@ -54,7 +54,8 @@ server.init(status, command)
 server_thread = threading.Thread(target=server.run, daemon=True)
 server_thread.start()
 
-# Start xbox controller (dummy for now)
+# Initialize and start xbox controller
+xbox.init(command)
 xbox_thread = threading.Thread(target=xbox.run, daemon=True)
 xbox_thread.start()
 

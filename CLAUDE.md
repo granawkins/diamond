@@ -24,6 +24,7 @@ Diamond is a quadruped robot running on Raspberry Pi 5 that controls MG90 servos
 - **PWM Driver**: PCA9685 board (16 channels at 50Hz)
 - **Servos**: MG90 servos with min_pulse=500, max_pulse=2500
 - **Channel mapping**: 0-3 front left, 4-7 back left, 8-11 back right, 12-15 front right
+- **Input**: Xbox Wireless Controller (MAC: 40:8E:2C:4A:25:C9) via Bluetooth on /dev/input/event5, configured to auto-reconnect
 
 ## Development
 
