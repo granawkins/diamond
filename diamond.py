@@ -3,7 +3,7 @@ import queue
 import threading
 from controllers import battery
 from controllers.body import Body
-from subscribers import server, xbox
+from subscribers import server, game_controller
 
 command_queue = queue.Queue()
 
@@ -55,9 +55,9 @@ server_thread = threading.Thread(target=server.run, daemon=True)
 server_thread.start()
 
 # Initialize and start xbox controller
-xbox.init(command)
-xbox_thread = threading.Thread(target=xbox.run, daemon=True)
-xbox_thread.start()
+game_controller.init(command)
+game_controller_thread = threading.Thread(target=game_controller.run, daemon=True)
+game_controller_thread.start()
 
 hz = 20
 while True:

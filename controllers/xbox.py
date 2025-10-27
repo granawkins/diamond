@@ -42,6 +42,10 @@ class Button(Enum):
     LEFT_TRIGGER = "left_trigger"
     RIGHT_TRIGGER = "right_trigger"
 
+    # Bumpers
+    LEFT_BUMPER = "left_bumper"
+    RIGHT_BUMPER = "right_bumper"
+
 
 class Controller:
     """Xbox Wireless Controller interface"""
@@ -52,6 +56,8 @@ class Controller:
         305: Button.B,
         307: Button.X,
         308: Button.Y,
+        310: Button.LEFT_BUMPER,   # BTN_TL
+        311: Button.RIGHT_BUMPER,  # BTN_TR
     }
 
     # Joystick axes and trigger codes
