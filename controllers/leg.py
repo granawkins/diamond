@@ -48,7 +48,9 @@ class Leg:
         self.shoulder.angle = angles[2]
 
     def reset(self):
-        self.angles = (90, 90, 90)
+        self.lower_hip.reset()
+        self.upper_hip.reset()
+        self.shoulder.reset()
 
     def up(self):
         x, y, z = self.angles

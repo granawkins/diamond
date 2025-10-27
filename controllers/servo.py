@@ -2,21 +2,21 @@ from adafruit_motor import servo as adafruit_servo
 
 # Servo configuration by channel
 SERVO_CONFIG = {
-    0: {"name": "front_left_lower_hip", "true_90": 90},
-    1: {"name": "front_left_upper_hip", "true_90": 90},
-    2: {"name": "front_left_shoulder", "true_90": 90},
+    0: {"name": "front_left_lower_hip", "default": 81},
+    1: {"name": "front_left_upper_hip", "default": 83},
+    2: {"name": "front_left_shoulder", "default": 78},
     # 3: empty
-    4: {"name": "back_left_lower_hip", "true_90": 90},
-    5: {"name": "back_left_upper_hip", "true_90": 90},
-    6: {"name": "back_left_shoulder", "true_90": 90},
+    4: {"name": "back_left_lower_hip", "default": 97},
+    5: {"name": "back_left_upper_hip", "default": 64},
+    6: {"name": "back_left_shoulder", "default": 94},
     # 7: empty
-    8: {"name": "back_right_lower_hip", "true_90": 90},
-    9: {"name": "back_right_upper_hip", "true_90": 90},
-    10: {"name": "back_right_shoulder", "true_90": 90},
+    8: {"name": "back_right_lower_hip", "default": 92},
+    9: {"name": "back_right_upper_hip", "default": 101},
+    10: {"name": "back_right_shoulder", "default": 97},
     # 11: empty
-    12: {"name": "front_right_lower_hip", "true_90": 90},
-    13: {"name": "front_right_upper_hip", "true_90": 90},
-    14: {"name": "front_right_shoulder", "true_90": 90},
+    12: {"name": "front_right_lower_hip", "default": 89},
+    13: {"name": "front_right_upper_hip", "default": 101},
+    14: {"name": "front_right_shoulder", "default": 77},
     # 15: empty
 }
 
@@ -31,12 +31,13 @@ class Servo:
         self.channel = channel
         config = SERVO_CONFIG[channel]
         self.name = config["name"]
+        self.default = config["default"]
         self.servo = adafruit_servo.Servo(
             pca.channels[channel],
             min_pulse=MIN_PULSE,
             max_pulse=MAX_PULSE
         )
-        self.angle = 90
+        self.angle = self.default
 
     @property
     def angle(self):
@@ -46,3 +47,6 @@ class Servo:
     def angle(self, value):
         self.servo.angle = value
         self._angle = value
+
+    def reset(self):
+        self.angle = self.default

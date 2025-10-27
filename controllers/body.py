@@ -29,8 +29,8 @@ class Body:
 
     def reset(self):
         """Set target to reset position"""
-        for name, leg in self.legs.items():
-            self.target_angles[name] = (90, 90, 90)
+        for leg in self.legs.values():
+            leg.reset()
 
     def up(self):
         """Update target to move body up"""

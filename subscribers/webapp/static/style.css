@@ -134,13 +134,39 @@ h1 {
     margin-bottom: 5px;
 }
 
+.servo-control .btn-minus,
+.servo-control .btn-plus {
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.servo-control .btn-minus:hover,
+.servo-control .btn-plus:hover {
+    background: #000;
+    color: #fff;
+}
+
+.servo-control > :not(label) {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .slider {
-    width: 100%;
+    width: calc(100% - 80px);
     height: 5px;
     background: #f0f0f0;
     outline: none;
     -webkit-appearance: none;
     border: 1px solid #000;
+    margin: 0 5px;
+    pointer-events: none;
+    cursor: default;
 }
 
 .slider::-webkit-slider-thumb {
@@ -148,13 +174,15 @@ h1 {
     width: 15px;
     height: 15px;
     background: #000;
-    cursor: pointer;
+    cursor: default;
+    pointer-events: none;
 }
 
 .slider::-moz-range-thumb {
     width: 15px;
     height: 15px;
     background: #000;
-    cursor: pointer;
+    cursor: default;
     border: none;
+    pointer-events: none;
 }

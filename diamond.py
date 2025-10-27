@@ -32,6 +32,20 @@ def process_queue():
             body.up()
         elif cmd == "down":
             body.down()
+        elif cmd.startswith("set_"):
+            parts = cmd.split("_")
+            delta = int(parts[-1])
+            leg_name = f"{parts[1]}_{parts[2]}"
+            servo_name = "_".join(parts[3:-1])
+
+            # Map servo name to index in target_angles tuple
+            servo_index = {"lower_hip": 0, "upper_hip": 1, "shoulder": 2}[servo_name]
+
+            # Apply delta to target with 45-135 limits
+            current_target = list(body.target_angles[leg_name])
+            current_target[servo_index] += delta
+            current_target[servo_index] = max(45, min(135, current_target[servo_index]))
+            body.target_angles[leg_name] = tuple(current_target)
         else:
             print(f"Invalid command: {cmd}")
 

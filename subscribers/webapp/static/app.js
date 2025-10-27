@@ -57,6 +57,30 @@ async function updateStatus() {
     }
 }
 
-// Update status on load and every 2 seconds
-updateStatus();
-setInterval(updateStatus, 2000);
+// Initialize after DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing...');
+
+    // Add event listeners to all +/- buttons
+    document.querySelectorAll('.btn-plus').forEach(button => {
+        button.addEventListener('click', function() {
+            const legName = this.getAttribute('data-leg');
+            const servo = this.getAttribute('data-servo');
+            console.log(`Incrementing ${legName} ${servo}`);
+            sendCommand(`set_${legName}_${servo}_1`);
+        });
+    });
+
+    document.querySelectorAll('.btn-minus').forEach(button => {
+        button.addEventListener('click', function() {
+            const legName = this.getAttribute('data-leg');
+            const servo = this.getAttribute('data-servo');
+            console.log(`Decrementing ${legName} ${servo}`);
+            sendCommand(`set_${legName}_${servo}_-1`);
+        });
+    });
+
+    // Update status on load and every 2 seconds
+    updateStatus();
+    setInterval(updateStatus, 2000);
+});
