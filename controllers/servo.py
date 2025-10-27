@@ -2,21 +2,21 @@ from adafruit_motor import servo as adafruit_servo
 
 # Servo configuration by channel
 SERVO_CONFIG = {
-    0: {"name": "front_left_lower_hip"},
-    1: {"name": "front_left_upper_hip"},
-    2: {"name": "front_left_shoulder"},
+    0: {"name": "front_left_lower_hip", "true_90": 90},
+    1: {"name": "front_left_upper_hip", "true_90": 90},
+    2: {"name": "front_left_shoulder", "true_90": 90},
     # 3: empty
-    4: {"name": "back_left_lower_hip"},
-    5: {"name": "back_left_upper_hip"},
-    6: {"name": "back_left_shoulder"},
+    4: {"name": "back_left_lower_hip", "true_90": 90},
+    5: {"name": "back_left_upper_hip", "true_90": 90},
+    6: {"name": "back_left_shoulder", "true_90": 90},
     # 7: empty
-    8: {"name": "back_right_lower_hip"},
-    9: {"name": "back_right_upper_hip"},
-    10: {"name": "back_right_shoulder"},
+    8: {"name": "back_right_lower_hip", "true_90": 90},
+    9: {"name": "back_right_upper_hip", "true_90": 90},
+    10: {"name": "back_right_shoulder", "true_90": 90},
     # 11: empty
-    12: {"name": "front_right_lower_hip"},
-    13: {"name": "front_right_upper_hip"},
-    14: {"name": "front_right_shoulder"},
+    12: {"name": "front_right_lower_hip", "true_90": 90},
+    13: {"name": "front_right_upper_hip", "true_90": 90},
+    14: {"name": "front_right_shoulder", "true_90": 90},
     # 15: empty
 }
 

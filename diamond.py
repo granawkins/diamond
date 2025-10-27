@@ -47,4 +47,5 @@ xbox_thread.start()
 hz = 20
 while True:
     process_queue()
+    body.step()
     time.sleep(1/hz)
