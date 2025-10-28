@@ -32,6 +32,10 @@ def process_queue():
             body.up()
         elif cmd == "down":
             body.down()
+        elif cmd == "front_up":
+            body.front_up()
+        elif cmd == "back_up":
+            body.back_up()
         elif cmd.startswith("set_"):
             parts = cmd.split("_")
             delta = int(parts[-1])

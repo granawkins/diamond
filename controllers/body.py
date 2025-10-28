@@ -50,3 +50,21 @@ class Body:
             current_target[0] -= value
             current_target[1] += value
             self.target_angles[name] = tuple(current_target)
+
+    def front_up(self):
+        """Update target to move front legs up"""
+        for name in ["front_left", "front_right"]:
+            current_target = list(self.target_angles[name])
+            value = -5 if "right" in name else 5
+            current_target[0] += value
+            current_target[1] -= value
+            self.target_angles[name] = tuple(current_target)
+
+    def back_up(self):
+        """Update target to move back legs up"""
+        for name in ["back_left", "back_right"]:
+            current_target = list(self.target_angles[name])
+            value = -5 if "right" in name else 5
+            current_target[0] += value
+            current_target[1] -= value
+            self.target_angles[name] = tuple(current_target)
