@@ -42,6 +42,6 @@ class Battery:
             "voltage": 0,
             "current": 0,
             "power": 0,
-            "percentage": 0,
+            "percentage": 69,
             "status": "offline"
         }

@@ -1,30 +1,49 @@
 import { useEffect, useState } from 'react'
 
-function App() {
-  const [count, setCount] = useState(0)
+import Battery from './components/Battery'
+import Leg from './components/Leg'
+import { sendCommand } from './utils'
 
-  const [ping, setPing] = useState(null)
+function App() {
+  const [status, setStatus] = useState(null)
+
+  const fetchStatus = async () => {
+    const response = await fetch('/api/status')
+    const data = await response.json()
+    setStatus(data)
+  }
+
   useEffect(() => {
-    fetch('/api/ping')
-      .then(response => response.json())
-      .then(data => setPing(data.message))
+    fetchStatus()
+    const interval = setInterval(() => {
+      fetchStatus()
+    }, 2000)
+    return () => clearInterval(interval)
   }, [])
 
   return (
     <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <h1>Diamond</h1>
+      <button onClick={() => sendCommand('reset')}>Reset</button>
+      <Battery status={status} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div>
+          <h2>Front Left</h2>
+          <Leg leg="front_left" status={status} />
+        </div>
+        <div>
+          <h2>Front Right</h2>
+          <Leg leg="front_right" status={status} />
+        </div>
+        <div>
+          <h2>Back Left</h2>
+          <Leg leg="back_left" status={status} />
+        </div>
+        <div>
+          <h2>Back Right</h2>
+          <Leg leg="back_right" status={status} />
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <p>Ping: {ping}</p>
     </>
   )
 }
