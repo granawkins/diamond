@@ -1,18 +1,27 @@
 from controllers.leg import Leg
-from controllers.pca import pca
+from controllers.battery import Battery
 
 class Body:
-    def __init__(self):
+    def __init__(self, mode="SIM"):
+        self.mode = mode
+
         self.legs = {
-            "front_left": Leg("front_left", pca),
-            "back_left": Leg("back_left", pca),
-            "back_right": Leg("back_right", pca),
-            "front_right": Leg("front_right", pca),
+            "front_left": Leg("front_left", mode),
+            "back_left": Leg("back_left", mode),
+            "back_right": Leg("back_right", mode),
+            "front_right": Leg("front_right", mode),
         }
+        self.battery = Battery(mode)
 
         # Motion smoothing state
         self.target_angles = {name: leg.angles for name, leg in self.legs.items()}
         self.interpolation_speed = 0.3  # 0-1, higher = faster
+
+    def status(self):
+        return {
+            "legs": {name: leg.angles for name, leg in self.legs.items()},
+            "battery": self.battery.status()
+        }
 
     def step(self):
         """Smoothly interpolate towards target angles. Call this each main loop iteration."""

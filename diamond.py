@@ -1,22 +1,14 @@
 import time
 import queue
 import threading
-from controllers import battery
 from controllers.body import Body
-from subscribers import server, game_controller
+import subscribers.server as server
 
 command_queue = queue.Queue()
 
-body = Body()
+mode = "SIM"
 
-def status():
-    """Return current angles and battery stats"""
-    legs_status = {name: l.angles for name, l in body.legs.items()}
-    battery_status = battery.status()
-    return {
-        "legs": legs_status,
-        "battery": battery_status
-    }
+body = Body()
 
 def command(cmd):
     """Add command to queue"""
@@ -54,14 +46,17 @@ def process_queue():
             print(f"Invalid command: {cmd}")
 
 # Initialize and start server
-server.init(status, command)
+server.init(body.status, command)
 server_thread = threading.Thread(target=server.run, daemon=True)
 server_thread.start()
 
 # Initialize and start xbox controller
-game_controller.init(command)
-game_controller_thread = threading.Thread(target=game_controller.run, daemon=True)
-game_controller_thread.start()
+if mode == "LIVE":
+    from subscribers.game_controller import game_controller
+    
+    game_controller.init(command)
+    game_controller_thread = threading.Thread(target=game_controller.run, daemon=True)
+    game_controller_thread.start()
 
 hz = 20
 while True:

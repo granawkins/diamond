@@ -1,41 +1,17 @@
-from controllers.servo import Servo
-
-# Leg configuration mapping leg names to servo channels
-LEG_CONFIG = {
-    "front_left": {
-        "lower_hip": 0,
-        "upper_hip": 1,
-        "shoulder": 2,
-    },
-    "back_left": {
-        "lower_hip": 4,
-        "upper_hip": 5,
-        "shoulder": 6,
-    },
-    "back_right": {
-        "lower_hip": 8,
-        "upper_hip": 9,
-        "shoulder": 10,
-    },
-    "front_right": {
-        "lower_hip": 12,
-        "upper_hip": 13,
-        "shoulder": 14,
-    },
-}
+from controllers.joint import Joint
 
 class Leg:
-    def __init__(self, name, pca):
-        if name not in LEG_CONFIG:
-            raise ValueError(f"Invalid leg name: {name}. Must be one of {list(LEG_CONFIG.keys())}")
-
+    def __init__(self, name, mode="SIM"):
         self.name = name
-        self.config = LEG_CONFIG[name]
-        self.shoulder = Servo(self.config["shoulder"], pca)
-        self.upper_hip = Servo(self.config["upper_hip"], pca)
-        self.lower_hip = Servo(self.config["lower_hip"], pca)
-
+        self.lower_hip = Joint(f"{name}_lower_hip", mode)
+        self.upper_hip = Joint(f"{name}_upper_hip", mode)
+        self.shoulder = Joint(f"{name}_shoulder", mode)
         self.reset()
+
+    def reset(self):
+        self.lower_hip.reset()
+        self.upper_hip.reset()
+        self.shoulder.reset()
 
     @property
     def angles(self):
@@ -46,11 +22,6 @@ class Leg:
         self.lower_hip.angle = angles[0]
         self.upper_hip.angle = angles[1]
         self.shoulder.angle = angles[2]
-
-    def reset(self):
-        self.lower_hip.reset()
-        self.upper_hip.reset()
-        self.shoulder.reset()
 
     def up(self):
         x, y, z = self.angles
