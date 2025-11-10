@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Battery from './components/Battery'
 import Leg from './components/Leg'
 import { sendCommand } from './utils'
+import Graph from './components/Graph'
 
 function App() {
   const [state, setState] = useState(null)
@@ -26,6 +27,7 @@ function App() {
     <>
       <h1>Diamond</h1>
       <button onClick={() => sendCommand('reset')}>Reset</button>
+      <Graph />
       <Battery state={state} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
         <div>
