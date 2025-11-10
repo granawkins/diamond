@@ -2,6 +2,7 @@ from fastapi import FastAPI, Body
 from fastapi.responses import FileResponse
 import uvicorn
 from pathlib import Path
+from kinematics import forward_kinematics
 
 app = FastAPI()
 
@@ -23,6 +24,14 @@ async def execute_command(data: dict = Body(...)):
     print(f"Executing command: {command}")
     command_func(command)
     return {"success": True}
+
+@app.post("/api/kinematics")
+async def compute_kinematics(data: dict = Body(...)):
+    dh_params = data.get("dh_params", [])
+    params_list = [(p["alpha"], p["a"], p["d"], p["theta"]) for p in dh_params]
+    positions = forward_kinematics(params_list)
+    positions_list = [pos.tolist() for pos in positions]
+    return {"positions": positions_list}
 
 # Serve static files from ../web/dist for non-API routes
 @app.get("/{full_path:path}")

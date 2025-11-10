@@ -1,4 +1,4 @@
-type State = {
+export type State = {
     legs: {
         [key: string]: {
             [key: string]: number
@@ -10,4 +10,11 @@ type State = {
     }
 }
 
-export type { State }
+export type Vec3 = [number, number, number]
+
+export type DHParams = {
+    alpha: number
+    a: number
+    d: number
+    theta: number
+}

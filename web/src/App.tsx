@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Battery from './components/Battery'
 import Leg from './components/Leg'
 import { sendCommand } from './utils'
-import Graph from './components/Graph'
+import Graph from './components/3d/Graph'
 
 function App() {
   const [state, setState] = useState(null)
