@@ -20,6 +20,10 @@ def init(status_fn, command_fn):
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.get("/api/ping")
+async def ping():
+    return {"message": "pong"}
+
 @app.get("/api/status")
 async def get_status():
     return status_func()
@@ -32,3 +36,6 @@ async def execute_command(data: dict = Body(...)):
 
 def run():
     uvicorn.run(app, host='0.0.0.0', port=8000)
+
+if __name__ == "__main__":
+    run()
