@@ -61,5 +61,5 @@ if mode == "LIVE":
 hz = 20
 while True:
     process_queue()
-    body.step()
+    body.update()
     time.sleep(1/hz)

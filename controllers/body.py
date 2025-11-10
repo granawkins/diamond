@@ -23,7 +23,7 @@ class Body:
             "battery": self.battery.state()
         }
 
-    def step(self):
+    def update(self):
         """Smoothly interpolate towards target angles. Call this each main loop iteration."""
         for name, leg in self.legs.items():
             current = leg.angles
