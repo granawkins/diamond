@@ -29,7 +29,9 @@ function App() {
       <button onClick={() => sendCommand('reset')}>Reset</button>
       <Graph />
       <Battery state={state} />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+      <div
+        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}
+      >
         <div>
           <h2>Front Left</h2>
           <Leg leg="front_left" state={state} />

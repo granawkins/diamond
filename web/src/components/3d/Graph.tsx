@@ -5,7 +5,14 @@ import Origin from './Origin'
 import type { Vec3 } from '../../types'
 import DHParamsTable from './DHParamsTable'
 
-const COLORS = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff']
+const COLORS = [
+  '#ff0000',
+  '#00ff00',
+  '#0000ff',
+  '#ffff00',
+  '#ff00ff',
+  '#00ffff',
+]
 
 const KinematicChain = ({ positions }: { positions: Vec3[] }) => {
   return (
@@ -13,7 +20,9 @@ const KinematicChain = ({ positions }: { positions: Vec3[] }) => {
       {positions.map((pos, i) => (
         <mesh key={`joint-${i}`} position={pos}>
           <sphereGeometry args={[0.08, 16, 16]} />
-          <meshStandardMaterial color={i === 0 ? '#ffffff' : COLORS[(i - 1) % COLORS.length]} />
+          <meshStandardMaterial
+            color={i === 0 ? '#ffffff' : COLORS[(i - 1) % COLORS.length]}
+          />
         </mesh>
       ))}
       {positions.slice(1).map((pos, i) => {
@@ -46,20 +55,23 @@ const Graph = () => {
               type="checkbox"
               checked={showAxes}
               onChange={(e) => setShowAxes(e.target.checked)}
-            />
-            {' '}Axes
+            />{' '}
+            Axes
           </label>
           <label>
             <input
               type="checkbox"
               checked={showGrid}
               onChange={(e) => setShowGrid(e.target.checked)}
-            />
-            {' '}Grid
+            />{' '}
+            Grid
           </label>
         </div>
         <div style={{ width: '600px', height: '600px' }}>
-          <Canvas camera={{ position: [4, 4, 6], fov: 50 }} gl={{ alpha: true }}>
+          <Canvas
+            camera={{ position: [4, 4, 6], fov: 50 }}
+            gl={{ alpha: true }}
+          >
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />
             {showAxes && <Origin />}
