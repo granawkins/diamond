@@ -8,7 +8,7 @@ class Battery:
         else:
             self.ina219 = None
 
-    def status(self):
+    def state(self):
         if self.ina219 is not None:
             bus_voltage = self.ina219.getBusVoltage_V()
             current_ma = self.ina219.getCurrent_mA()
@@ -24,18 +24,18 @@ class Battery:
 
             # Negative current = discharging, positive = charging
             if current_a < -0.05:
-                charge_status = "discharging"
+                status = "discharging"
             elif current_a > 0.05:
-                charge_status = "charging"
+                status = "charging"
             else:
-                charge_status = "idle"
+                status = "idle"
 
             return {
                 "voltage": round(voltage, 2),
                 "current": round(current_a, 3),
                 "power": round(power_w, 3),
                 "percentage": round(percentage, 1),
-                "status": charge_status
+                "status": status
             }
 
         return {

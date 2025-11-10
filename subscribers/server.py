@@ -1,27 +1,21 @@
 from fastapi import FastAPI, Body
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from starlette.requests import Request
 import uvicorn
 from pathlib import Path
 
 app = FastAPI()
 
-status_func = None
+state_func = None
 command_func = None
 
-def init(status_fn, command_fn):
-    global status_func, command_func
-    status_func = status_fn
+def init(state_fn, command_fn):
+    global state_func, command_func
+    state_func = state_fn
     command_func = command_fn
 
-@app.get("/api/ping")
-async def ping():
-    return {"message": "pong"}
-
-@app.get("/api/status")
-async def get_status():
-    return status_func()
+@app.get("/api/state")
+async def get_state():
+    return state_func()
 
 @app.post("/api/command")
 async def execute_command(data: dict = Body(...)):
@@ -46,6 +40,3 @@ async def serve_static(full_path: str):
 
 def run():
     uvicorn.run(app, host='0.0.0.0', port=8000)
-
-if __name__ == "__main__":
-    run()

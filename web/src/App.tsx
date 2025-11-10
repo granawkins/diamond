@@ -5,18 +5,19 @@ import Leg from './components/Leg'
 import { sendCommand } from './utils'
 
 function App() {
-  const [status, setStatus] = useState(null)
+  const [state, setState] = useState(null)
 
-  const fetchStatus = async () => {
-    const response = await fetch('/api/status')
+  const fetchState = async () => {
+    const response = await fetch('/api/state')
     const data = await response.json()
-    setStatus(data)
+    console.log(data)
+    setState(data)
   }
 
   useEffect(() => {
-    fetchStatus()
+    fetchState()
     const interval = setInterval(() => {
-      fetchStatus()
+      fetchState()
     }, 2000)
     return () => clearInterval(interval)
   }, [])
@@ -25,23 +26,23 @@ function App() {
     <>
       <h1>Diamond</h1>
       <button onClick={() => sendCommand('reset')}>Reset</button>
-      <Battery status={status} />
+      <Battery state={state} />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
         <div>
           <h2>Front Left</h2>
-          <Leg leg="front_left" status={status} />
+          <Leg leg="front_left" state={state} />
         </div>
         <div>
           <h2>Front Right</h2>
-          <Leg leg="front_right" status={status} />
+          <Leg leg="front_right" state={state} />
         </div>
         <div>
           <h2>Back Left</h2>
-          <Leg leg="back_left" status={status} />
+          <Leg leg="back_left" state={state} />
         </div>
         <div>
           <h2>Back Right</h2>
-          <Leg leg="back_right" status={status} />
+          <Leg leg="back_right" state={state} />
         </div>
       </div>
     </>

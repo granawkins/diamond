@@ -17,10 +17,10 @@ class Body:
         self.target_angles = {name: leg.angles for name, leg in self.legs.items()}
         self.interpolation_speed = 0.3  # 0-1, higher = faster
 
-    def status(self):
+    def state(self):
         return {
-            "legs": {name: leg.angles for name, leg in self.legs.items()},
-            "battery": self.battery.status()
+            "legs": {name: leg.state() for name, leg in self.legs.items()},
+            "battery": self.battery.state()
         }
 
     def step(self):

@@ -1,6 +1,8 @@
-type Status = {
+type State = {
     legs: {
-        [key: string]: number[]
+        [key: string]: {
+            [key: string]: number
+        }
     }
     battery: {
         percentage: number
@@ -8,4 +10,4 @@ type Status = {
     }
 }
 
-export type { Status }
+export type { State }

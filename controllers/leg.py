@@ -13,6 +13,13 @@ class Leg:
         self.upper_hip.reset()
         self.shoulder.reset()
 
+    def state(self):
+        return {
+            "lower_hip": self.lower_hip.angle,
+            "upper_hip": self.upper_hip.angle,
+            "shoulder": self.shoulder.angle
+        }
+
     @property
     def angles(self):
         return self.lower_hip.angle, self.upper_hip.angle, self.shoulder.angle

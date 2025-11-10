@@ -46,7 +46,7 @@ def process_queue():
             print(f"Invalid command: {cmd}")
 
 # Initialize and start server
-server.init(body.status, command)
+server.init(body.state, command)
 server_thread = threading.Thread(target=server.run, daemon=True)
 server_thread.start()
 

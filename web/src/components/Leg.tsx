@@ -1,8 +1,18 @@
-import type { Status } from '../types'
+import type { State } from '../types'
 
-const Leg = ({ leg, status }: { leg: string, status?: Status | null }) => {
-    const angles = status?.legs[leg] || [0, 0, 0]
-    return <div>Leg: {leg} - {angles.join(', ')}</div>
+const Joint = ({ name, angle }: { name: string, angle: number }) => {
+    return <div>{name}: {angle}</div>
+}
+
+const Leg = ({ leg, state }: { leg: string, state?: State | null }) => {
+    const angles = state?.legs[leg] || { lower_hip: 0, upper_hip: 0, shoulder: 0 }
+    return (
+        <>
+            <Joint name="lower_hip" angle={angles.lower_hip} />
+            <Joint name="upper_hip" angle={angles.upper_hip} />
+            <Joint name="shoulder" angle={angles.shoulder} />
+        </>
+    )
 }
 
 export default Leg
