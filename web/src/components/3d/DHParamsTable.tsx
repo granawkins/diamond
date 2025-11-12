@@ -4,7 +4,8 @@ import KinematicChain from './KinematicChain'
 import type { Vec3, DHParams } from '../../types'
 
 const DEFAULT_DH_PARAMS = [
-  { alpha: 0, a: 0, d: 15.5, theta: Math.PI / 2 },
+  { alpha: 0, a: 0, d: 0, theta: -Math.PI / 2 },
+  { alpha: Math.PI / 2, a: 0, d: 15.5, theta: Math.PI / 2 },
   { alpha: -Math.PI / 2, a: -9.3, d: 21.1, theta: -2.1 },
   { alpha: 0, a: 63.25, d: 0, theta: -2 },
   { alpha: 0, a: 82.5, d: 0, theta: 0 },

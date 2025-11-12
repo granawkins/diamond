@@ -19,8 +19,8 @@ function Origin({
   return (
     <group position={position} rotation={rotation}>
       {axes.map(({ end, color, label }) => {
-        const labelPos = end.map((c: number) => c > 0 ? c * 1.1 : c) as Vec3
-        return (          
+        const labelPos = end.map((c: number) => (c > 0 ? c * 1.1 : c)) as Vec3
+        return (
           <group key={label}>
             <Line points={[[0, 0, 0], end]} color={color} lineWidth={2} />
             <Text position={labelPos} fontSize={3} color={'black'}>

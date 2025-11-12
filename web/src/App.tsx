@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react'
 import Battery from './components/Battery'
 import Leg from './components/Leg'
 import { sendCommand } from './utils'
-// import DHEditor from './components/3d/DHParamsTable'
+import DHEditor from './components/3d/DHParamsTable'
 import Graph from './components/3d/Graph'
 import KinematicChain from './components/3d/KinematicChain'
 import type { State } from './types'
 
 function App() {
   const [state, setState] = useState<State | null>(null)
+  const [editor, setEditor] = useState<boolean>(false)
 
   const fetchState = async () => {
     const response = await fetch('/api/state')
@@ -39,31 +40,39 @@ function App() {
       <button onClick={() => command('reset')}>Reset</button>
       <button onClick={() => command('up')}>Up</button>
       <button onClick={() => command('down')}>Down</button>
-      {/* <DHEditor /> */}
-      <div style={{ width: '800px', height: '400px' }}>
-        <Graph showAxes={true} showGrid={true}>
-          {state?.legs && (
-            <>
-              <KinematicChain
-                positions={state.legs.front_left.positions}
-                key="front_left"
-              />
-              <KinematicChain
-                positions={state.legs.front_right.positions}
-                key="front_right"
-              />
-              <KinematicChain
-                positions={state.legs.back_left.positions}
-                key="back_left"
-              />
-              <KinematicChain
-                positions={state.legs.back_right.positions}
-                key="back_right"
-              />
-            </>
-          )}
-        </Graph>
-      </div>
+      <input
+        type="checkbox"
+        checked={editor}
+        onChange={() => setEditor(!editor)}
+      />
+      {editor ? (
+        <DHEditor />
+      ) : (
+        <div style={{ width: '800px', height: '400px' }}>
+          <Graph showAxes={true} showGrid={true}>
+            {state?.legs && (
+              <>
+                <KinematicChain
+                  positions={state.legs.front_left.positions}
+                  key="front_left"
+                />
+                <KinematicChain
+                  positions={state.legs.front_right.positions}
+                  key="front_right"
+                />
+                <KinematicChain
+                  positions={state.legs.back_left.positions}
+                  key="back_left"
+                />
+                <KinematicChain
+                  positions={state.legs.back_right.positions}
+                  key="back_right"
+                />
+              </>
+            )}
+          </Graph>
+        </div>
+      )}
       <div
         style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}
       >

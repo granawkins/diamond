@@ -13,9 +13,15 @@ from kinematics import (
 
 # Back Left leg
 DEFAULT_DH_PARAMS = [
-  { "alpha": 0, "a": 0, "d": 15.5, "theta": math.pi / 2 },
+  # Base (center of body) to first joint + axis rotation so x=forward, y=left, z=up
+  { "alpha": 0, "a": -46.5, "d": 0, "theta": -math.pi / 2 },
+  # First joint (shoulder)
+  { "alpha": math.pi / 2, "a": -27.9, "d": 15.5, "theta": math.pi / 2 },
+  # Second joint (upper hip)
   { "alpha": -math.pi / 2, "a": -9.3, "d": 21.1, "theta": -2.1 },
+  # Third joint (lower hip)
   { "alpha": 0, "a": 63.25, "d": 0, "theta": -2 },
+  # End effector (foot)
   { "alpha": 0, "a": 82.5, "d": 0, "theta": 0 },
 ]
 OFFSET_Z = 46.5
@@ -25,22 +31,20 @@ class Leg:
     def __init__(self, name, mode="SIM"):
         self.name = name
         self.dh_params = deepcopy(DEFAULT_DH_PARAMS)
-        self.offset_z = OFFSET_Z
-        self.offset_x = OFFSET_X
         if "front" in name:
-            self.dh_params[0]["d"] *= -1
-            self.offset_z *= -1
-        if "right" in name:
+            self.dh_params[0]["a"] *= -1
             self.dh_params[1]["d"] *= -1
-            self.offset_x *= -1
+        if "right" in name:
+            self.dh_params[1]["a"] *= -1
+            self.dh_params[2]["d"] *= -1
 
         self.shoulder = Joint(f"{name}_shoulder", mode)
         self.upper_hip = Joint(f"{name}_upper_hip", mode)
         self.lower_hip = Joint(f"{name}_lower_hip", mode)
 
-        self.shoulder.default = radians_to_degrees(self.dh_params[0]["theta"])
-        self.upper_hip.default = radians_to_degrees(self.dh_params[1]["theta"])
-        self.lower_hip.default = radians_to_degrees(self.dh_params[2]["theta"])
+        self.shoulder.default = radians_to_degrees(self.dh_params[1]["theta"])
+        self.upper_hip.default = radians_to_degrees(self.dh_params[2]["theta"])
+        self.lower_hip.default = radians_to_degrees(self.dh_params[3]["theta"])
         self.reset()
 
     def reset(self):
@@ -68,28 +72,22 @@ class Leg:
 
     @property
     def position(self) -> List[Vec3]:
-        # Derive DH params for this leg
+        # Derive DH params for this leg\
+        angles = [None] + list(self.angles) + [None]
         dh_params = []
-        for i, joint in enumerate(self.dh_params):
-            theta_deg = 0 if i > 2 else self.angles[i]
-            theta_rad = degree_to_radians(theta_deg)
-            dh_params.append((joint["alpha"], joint["a"], joint["d"], theta_rad))
+        for joint, angle in zip(self.dh_params, angles):
+            if angle is not None:
+                joint["theta"] = degree_to_radians(angle)
+            dh_params.append((joint["alpha"], joint["a"], joint["d"], joint["theta"]))
         # Calculate the end-effector position
         positions = forward_kinematics(dh_params)
-        for pos in positions:
-            pos[0] += self.offset_x
-            pos[2] += self.offset_z
         return positions
 
     @position.setter
     def position(self, position: Vec3):
-        x, y, z = position
-        # Adjust for leg offsets
-        x_adj = x - self.offset_x
-        z_adj = z - self.offset_z
         # Calculate joint angles using current angles as initial guess
         current_angles = tuple(degree_to_radians(a) for a in self.angles)
-        angles = inverse_kinematics((x_adj, y, z_adj), self.dh_params, current_angles)
+        angles = inverse_kinematics(position, self.dh_params, current_angles)
         if angles is None:
             print(f"Failed to calculate inverse kinematics for {self.name}")
             return

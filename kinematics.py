@@ -58,18 +58,18 @@ def inverse_kinematics(target: Tuple[float, float, float],
     Args:
         target: (x, y, z) end-effector position
         dh_base: Base DH parameters (list of dicts with alpha, a, d, theta)
-        initial_angles: Starting guess for joint angles in radians
+        initial_angles: Starting guess for joint angles in radians (for joints 1-3)
         max_iter: Maximum iterations
         tolerance: Position error threshold in mm
 
     Returns:
-        (theta0, theta1, theta2) in radians, or None if no solution found
+        (theta1, theta2, theta3) in radians, or None if no solution found
     """
     target_pos = np.array(target)
 
-    # Initialize with default angles if not provided
+    # Initialize with default angles if not provided (joints 1-3)
     if initial_angles is None:
-        angles = np.array([dh_base[i]["theta"] for i in range(3)])
+        angles = np.array([dh_base[i]["theta"] for i in range(1, 4)])
     else:
         angles = np.array(initial_angles)
 
@@ -77,7 +77,7 @@ def inverse_kinematics(target: Tuple[float, float, float],
         # Compute forward kinematics with current angles
         dh_params = [
             (dh_base[i]["alpha"], dh_base[i]["a"], dh_base[i]["d"],
-             angles[i] if i < 3 else dh_base[i]["theta"])
+             angles[i-1] if 1 <= i <= 3 else dh_base[i]["theta"])
             for i in range(len(dh_base))
         ]
         positions = forward_kinematics(dh_params)
@@ -96,7 +96,7 @@ def inverse_kinematics(target: Tuple[float, float, float],
             angles_plus[i] += delta
             dh_params_plus = [
                 (dh_base[j]["alpha"], dh_base[j]["a"], dh_base[j]["d"],
-                 angles_plus[j] if j < 3 else dh_base[j]["theta"])
+                 angles_plus[j-1] if 1 <= j <= 3 else dh_base[j]["theta"])
                 for j in range(len(dh_base))
             ]
             pos_plus = np.array(forward_kinematics(dh_params_plus)[-1])

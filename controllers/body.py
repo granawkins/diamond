@@ -47,11 +47,11 @@ class Body:
         for name in self.legs.keys():
             leg = self.legs[name]
             end_effector = leg.position[-1]
-            leg.position = end_effector[0], end_effector[1] + 5, end_effector[2]
+            leg.position = end_effector[0], end_effector[1], end_effector[2] + 5
 
     def down(self):
         """Update target to move body down"""
         for name in self.legs.keys():
             leg = self.legs[name]
             end_effector = leg.position[-1]
-            leg.position = end_effector[0], end_effector[1] - 5, end_effector[2]
+            leg.position = end_effector[0], end_effector[1], end_effector[2] - 5
