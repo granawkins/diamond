@@ -1,52 +1,36 @@
 import numpy as np
-from typing import List, Tuple, Union
+from numpy.typing import NDArray
+from typing import Annotated, List, Tuple
 
-Matrix4x4 = np.ndarray
+DHParams = Tuple[float, float, float, float]  # (alpha, a, d, theta)
+DHMatrix = Annotated[NDArray[np.float64], "shape[4, 4]"]
+Vec3 = Annotated[NDArray[np.float64], "shape[3]"]
 
-def create_dh_matrix(alpha: float, a: float, d: float, theta: float) -> Matrix4x4:
+def degree_to_radians(degrees: float) -> float:
+    return degrees * np.pi / 180.0
+
+def radians_to_degrees(radians: float) -> float:
+    return radians * 180.0 / np.pi
+
+def create_dh_matrix(alpha: float, a: float, d: float, theta: float) -> DHMatrix:
     """
     Creates a 4x4 Homogeneous Transformation Matrix (T) based on standard 
-    Denavit-Hartenberg (D-H) parameters.
-    
-    T(i-1, i) = Rot(x, alpha) * Trans(x, a) * Trans(z, d) * Rot(z, theta)
-    
-    Args:
-        alpha: Link twist (rotation about the X-axis).
-        a: Link length (translation along the X-axis).
-        d: Link offset (translation along the Z-axis).
-        theta: Joint angle (rotation about the Z-axis).
-        
-    Returns:
-        The 4x4 homogeneous transformation matrix.
+    Denavit-Hartenberg (D-H) parameters.    
     """
     c_a, s_a = np.cos(alpha), np.sin(alpha)
     c_t, s_t = np.cos(theta), np.sin(theta)
-    
-    # Standard D-H Matrix Structure
     T = np.array([
         [c_t,               -s_t,              0.0,             a],
         [s_t * c_a,         c_t * c_a,         -s_a,            -s_a * d],
         [s_t * s_a,         c_t * s_a,         c_a,             c_a * d],
         [0.0,               0.0,               0.0,             1.0]
     ])
-    
-    # Note: The second and third rows are sometimes swapped depending on the D-H convention (Standard vs. Modified)
-    # This implementation uses the 'Standard' D-H convention for simplicity.
     return T
 
-# -------------------------------------------------------------
-
-def forward_kinematics(dh_params: List[Tuple[float, float, float, float]]) -> List[np.ndarray]:
+def forward_kinematics(dh_params: List[DHParams]) -> List[Vec3]:
     """
     Calculates the position of each joint in the kinematic chain
     from a list of D-H parameter sets.
-
-    Args:
-        dh_params: A list of (alpha, a, d, theta) tuples for each joint/link.
-
-    Returns:
-        A list of 3D position vectors [x, y, z] for each joint, including
-        the base (origin) and end-effector. Length is len(dh_params) + 1.
     """
     positions = [np.array([0.0, 0.0, 0.0])]  # Start at origin
     T_accumulated = np.eye(4)
@@ -60,7 +44,7 @@ def forward_kinematics(dh_params: List[Tuple[float, float, float, float]]) -> Li
         position = T_accumulated[:3, 3]
         positions.append(position)
 
-    return positions
+    return [p.tolist() for p in positions]
 
 # -------------------------------------------------------------
 

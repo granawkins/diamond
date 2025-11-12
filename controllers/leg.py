@@ -1,178 +1,93 @@
+import math
+from copy import deepcopy
+
 from controllers.joint import Joint
+from kinematics import (
+    forward_kinematics, 
+    degree_to_radians,
+    radians_to_degrees,
+)
+
+# Back Left leg
+DEFAULT_DH_PARAMS = [
+  { "alpha": 0, "a": 0, "d": 15.5, "theta": math.pi / 2 },
+  { "alpha": -math.pi / 2, "a": -9.3, "d": 21.1, "theta": -2.1 },
+  { "alpha": 0, "a": 63.25, "d": 0, "theta": -2 },
+  { "alpha": 0, "a": 82.5, "d": 0, "theta": 0 },
+]
+OFFSET_Z = 46.5
+OFFSET_X = -27.9
 
 class Leg:
     def __init__(self, name, mode="SIM"):
         self.name = name
-        self.lower_hip = Joint(f"{name}_lower_hip", mode)
-        self.upper_hip = Joint(f"{name}_upper_hip", mode)
+        self.dh_params = deepcopy(DEFAULT_DH_PARAMS)
+        self.offset_z = OFFSET_Z
+        self.offset_x = OFFSET_X
+        if "front" in name:
+            self.dh_params[0]["d"] *= -1
+            self.offset_z *= -1
+        if "right" in name:
+            self.dh_params[1]["d"] *= -1
+            self.offset_x *= -1
+
         self.shoulder = Joint(f"{name}_shoulder", mode)
+        self.upper_hip = Joint(f"{name}_upper_hip", mode)
+        self.lower_hip = Joint(f"{name}_lower_hip", mode)
+
+        self.shoulder.default = radians_to_degrees(self.dh_params[0]["theta"])
+        self.upper_hip.default = radians_to_degrees(self.dh_params[1]["theta"])
+        self.lower_hip.default = radians_to_degrees(self.dh_params[2]["theta"])
         self.reset()
 
     def reset(self):
-        self.lower_hip.reset()
-        self.upper_hip.reset()
         self.shoulder.reset()
+        self.upper_hip.reset()
+        self.lower_hip.reset()
+        self.forward_kinematics()
 
     def state(self):
         return {
-            "lower_hip": self.lower_hip.angle,
+            "shoulder": self.shoulder.angle,
             "upper_hip": self.upper_hip.angle,
-            "shoulder": self.shoulder.angle
+            "lower_hip": self.lower_hip.angle,
+            "positions": self.positions,
         }
 
     @property
     def angles(self):
-        return self.lower_hip.angle, self.upper_hip.angle, self.shoulder.angle
+        return self.shoulder.angle, self.upper_hip.angle, self.lower_hip.angle
 
     @angles.setter
     def angles(self, angles):
-        self.lower_hip.angle = angles[0]
+        self.shoulder.angle = angles[0]
         self.upper_hip.angle = angles[1]
-        self.shoulder.angle = angles[2]
+        self.lower_hip.angle = angles[2]
+        self.forward_kinematics()
 
-    def up(self):
-        x, y, z = self.angles
-        value = -5 if "right" in self.name else 5
-        self.angles = (x+value, y-value, z)
+    # def up(self):
+    #     x, y, z = self.angles
+    #     value = -5 if "right" in self.name else 5
+    #     self.angles = (x+value, y-value, z)
 
-    def down(self):
-        x, y, z = self.angles
-        value = -5 if "right" in self.name else 5
-        self.angles = (x-value, y+value, z)
+    # def down(self):
+    #     x, y, z = self.angles
+    #     value = -5 if "right" in self.name else 5
+    #     self.angles = (x-value, y+value, z)
 
-    def forward_kinematics(self, shoulder_angle, upper_hip_angle, lower_hip_angle):
-        pass
+    def forward_kinematics(self):
+        # Derive DH params for this leg
+        dh_params = []
+        for i, joint in enumerate(self.dh_params):
+            theta_deg = 0 if i > 2 else self.angles[i]
+            theta_rad = degree_to_radians(theta_deg)
+            dh_params.append((joint["alpha"], joint["a"], joint["d"], theta_rad))
+        # Calculate the end-effector position
+        positions = forward_kinematics(dh_params)
+        for pos in positions:
+            pos[0] += self.offset_x
+            pos[2] += self.offset_z
+        self.positions = positions
 
     def inverse_kinematics(self, x, y, z):
         pass
-
-'''
-Great video: https://www.youtube.com/watch?v=rA9tm0gTln8
-
-# Define the 4x4 matrix type for clarity
-Matrix4x4 = np.ndarray
-
-def create_dh_matrix(alpha: float, a: float, d: float, theta: float) -> Matrix4x4:
-    """
-    Creates a 4x4 Homogeneous Transformation Matrix (T) based on standard 
-    Denavit-Hartenberg (D-H) parameters.
-    
-    T(i-1, i) = Rot(x, alpha) * Trans(x, a) * Trans(z, d) * Rot(z, theta)
-    
-    Args:
-        alpha: Link twist (rotation about the X-axis).
-        a: Link length (translation along the X-axis).
-        d: Link offset (translation along the Z-axis).
-        theta: Joint angle (rotation about the Z-axis).
-        
-    Returns:
-        The 4x4 homogeneous transformation matrix.
-    """
-    c_a, s_a = np.cos(alpha), np.sin(alpha)
-    c_t, s_t = np.cos(theta), np.sin(theta)
-    
-    # Standard D-H Matrix Structure
-    T = np.array([
-        [c_t,               -s_t,              0.0,             a],
-        [s_t * c_a,         c_t * c_a,         -s_a,            -s_a * d],
-        [s_t * s_a,         c_t * s_a,         c_a,             c_a * d],
-        [0.0,               0.0,               0.0,             1.0]
-    ])
-    
-    # Note: The second and third rows are sometimes swapped depending on the D-H convention (Standard vs. Modified)
-    # This implementation uses the 'Standard' D-H convention for simplicity.
-    return T
-
-# -------------------------------------------------------------
-
-def forward_kinematics(dh_params: List[Tuple[float, float, float, float]]) -> Matrix4x4:
-    """
-    Calculates the cumulative end-effector transformation matrix 
-    from a list of D-H parameter sets.
-
-    Args:
-        dh_params: A list of (alpha, a, d, theta) tuples for each joint/link.
-
-    Returns:
-        The 4x4 transformation matrix T_base_to_end_effector.
-    """
-    # Start with the identity matrix (T_0_0)
-    T_total = np.eye(4)
-    
-    # Chain the transformations: T_0_n = T_0_1 * T_1_2 * ... * T_{n-1}_n
-    for params in dh_params:
-        T_link = create_dh_matrix(*params)
-        T_total = T_total @ T_link  # Matrix multiplication
-        
-    return T_total
-
-# -------------------------------------------------------------
-
-def inverse_kinematics_planar(target_xy: Union[Tuple[float, float], np.ndarray], 
-                              L1: float, L2: float) -> Union[Tuple[float, float], None]:
-    """
-    A lightweight, analytical Inverse Kinematics solver for a simple 2-link 
-    planar (RR) manipulator. 
-    
-    This is an analytical method specific to a common 2-DOF structure. 
-    General IK for complex robots requires more involved methods 
-    (e.g., iterative/Jacobian-based).
-    
-    Args:
-        target_xy: (x, y) coordinates of the desired end-effector position.
-        L1: Length of the first link.
-        L2: Length of the second link.
-
-    Returns:
-        (theta1, theta2) in radians, or None if the target is unreachable.
-    """
-    x, y = target_xy
-    D = (x**2 + y**2 - L1**2 - L2**2) / (2 * L1 * L2)
-
-    # Check for reachability
-    if D > 1.0 or D < -1.0:
-        return None # Target unreachable
-
-    # theta2 (Elbow-up configuration)
-    theta2 = np.arctan2(np.sqrt(1 - D**2), D) 
-    
-    # theta1
-    beta = np.arctan2(L2 * np.sin(theta2), L1 + L2 * np.cos(theta2))
-    theta1 = np.arctan2(y, x) - beta
-    
-    # Can also return the 'Elbow-down' solution: theta2 = np.arctan2(-np.sqrt(1 - D**2), D)
-    return theta1, theta2
-
-# -------------------------------------------------------------
-
-def get_inverse_transformation(T: Matrix4x4) -> Matrix4x4:
-    """
-    Calculates the inverse of a 4x4 Homogeneous Transformation Matrix (T).
-    
-    T_inv is structured such that: 
-        R_inv = R_T (Rotation matrix is orthogonal)
-        p_inv = -R_T * p
-    
-    This avoids a full, computationally expensive matrix inversion (np.linalg.inv)
-    by exploiting the properties of a transformation matrix.
-    
-    Args:
-        T: The 4x4 transformation matrix.
-        
-    Returns:
-        The inverse 4x4 transformation matrix T_inv.
-    """
-    R = T[:3, :3]
-    p = T[:3, 3]
-    
-    R_T = R.T       # Transpose of rotation matrix is its inverse
-    p_inv = -R_T @ p # Inverse position vector
-    
-    T_inv = np.eye(4)
-    T_inv[:3, :3] = R_T
-    T_inv[:3, 3] = p_inv
-    
-    return T_inv
-
-# -------------------------------------------------------------
-'''

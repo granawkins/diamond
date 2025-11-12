@@ -3,15 +3,17 @@ import { useEffect, useState } from 'react'
 import Battery from './components/Battery'
 import Leg from './components/Leg'
 import { sendCommand } from './utils'
+// import DHEditor from './components/3d/DHParamsTable'
 import Graph from './components/3d/Graph'
+import KinematicChain from './components/3d/KinematicChain'
+import type { State } from './types'
 
 function App() {
-  const [state, setState] = useState(null)
+  const [state, setState] = useState<State | null>(null)
 
   const fetchState = async () => {
     const response = await fetch('/api/state')
     const data = await response.json()
-    console.log(data)
     setState(data)
   }
 
@@ -26,9 +28,33 @@ function App() {
   return (
     <>
       <h1>Diamond</h1>
-      <button onClick={() => sendCommand('reset')}>Reset</button>
-      <Graph />
       <Battery state={state} />
+      <button onClick={() => sendCommand('reset')}>Reset</button>
+      {/* <DHEditor /> */}
+      <div style={{ width: '800px', height: '400px' }}>
+        <Graph showAxes={true} showGrid={true}>
+          {state?.legs && (
+            <>
+              <KinematicChain
+                positions={state.legs.front_left.positions}
+                key="front_left"
+              />
+              <KinematicChain
+                positions={state.legs.front_right.positions}
+                key="front_right"
+              />
+              <KinematicChain
+                positions={state.legs.back_left.positions}
+                key="back_left"
+              />
+              <KinematicChain
+                positions={state.legs.back_right.positions}
+                key="back_right"
+              />
+            </>
+          )}
+        </Graph>
+      </div>
       <div
         style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}
       >

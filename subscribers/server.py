@@ -30,8 +30,7 @@ async def compute_kinematics(data: dict = Body(...)):
     dh_params = data.get("dh_params", [])
     params_list = [(p["alpha"], p["a"], p["d"], p["theta"]) for p in dh_params]
     positions = forward_kinematics(params_list)
-    positions_list = [pos.tolist() for pos in positions]
-    return {"positions": positions_list}
+    return {"positions": positions}
 
 # Serve static files from ../web/dist for non-API routes
 @app.get("/{full_path:path}")

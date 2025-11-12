@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
+import Graph from './Graph'
+import KinematicChain from './KinematicChain'
 import type { Vec3, DHParams } from '../../types'
 
 const DEFAULT_DH_PARAMS = [
-  { alpha: 0, a: 1, d: 0, theta: 0 },
-  { alpha: 0, a: 1, d: 0, theta: 0 },
-  { alpha: 0, a: 1, d: 0, theta: 0 },
-  { alpha: 0, a: 1, d: 0, theta: 0 },
+  { alpha: 0, a: 0, d: 15.5, theta: Math.PI / 2 },
+  { alpha: -Math.PI / 2, a: -9.3, d: 21.1, theta: -2.1 },
+  { alpha: 0, a: 63.25, d: 0, theta: -2 },
+  { alpha: 0, a: 82.5, d: 0, theta: 0 },
 ]
 
 const DHParamsTable = ({
@@ -82,4 +84,51 @@ const DHParamsTable = ({
   )
 }
 
-export default DHParamsTable
+const DHEditor = () => {
+  const [showAxes, setShowAxes] = useState(true)
+  const [showGrid, setShowGrid] = useState(true)
+  const [positions, setPositions] = useState<Vec3[]>([])
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        gap: '10px',
+        border: '1px solid black',
+        height: '600px',
+      }}
+    >
+      <div style={{ width: '50%' }}>
+        <DHParamsTable setPositions={setPositions} />
+      </div>
+      <div style={{ width: '50%', position: 'relative' }}>
+        <div
+          style={{ position: 'absolute', top: '0', left: '0', zIndex: 1000 }}
+        >
+          <label style={{ marginRight: '15px' }}>
+            <input
+              type="checkbox"
+              checked={showAxes}
+              onChange={(e) => setShowAxes(e.target.checked)}
+            />{' '}
+            Axes
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={showGrid}
+              onChange={(e) => setShowGrid(e.target.checked)}
+            />{' '}
+            Grid
+          </label>
+        </div>
+        <Graph showAxes={showAxes} showGrid={showGrid}>
+          <KinematicChain positions={positions} key="dh-editor" />
+        </Graph>
+      </div>
+    </div>
+  )
+}
+
+export default DHEditor

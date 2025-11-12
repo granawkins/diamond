@@ -9,7 +9,11 @@ const Joint = ({ name, angle }: { name: string; angle: number }) => {
 }
 
 const Leg = ({ leg, state }: { leg: string; state?: State | null }) => {
-  const angles = state?.legs[leg] || { lower_hip: 0, upper_hip: 0, shoulder: 0 }
+  const angles = state?.legs[leg as keyof typeof state.legs] || {
+    lower_hip: 0,
+    upper_hip: 0,
+    shoulder: 0,
+  }
   return (
     <>
       <Joint name="lower_hip" angle={angles.lower_hip} />
