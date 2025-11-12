@@ -25,11 +25,20 @@ function App() {
     return () => clearInterval(interval)
   }, [])
 
+  const command = (cmd: string) => {
+    sendCommand(cmd)
+    setTimeout(() => {
+      fetchState()
+    }, 100)
+  }
+
   return (
     <>
       <h1>Diamond</h1>
       <Battery state={state} />
-      <button onClick={() => sendCommand('reset')}>Reset</button>
+      <button onClick={() => command('reset')}>Reset</button>
+      <button onClick={() => command('up')}>Up</button>
+      <button onClick={() => command('down')}>Down</button>
       {/* <DHEditor /> */}
       <div style={{ width: '800px', height: '400px' }}>
         <Graph showAxes={true} showGrid={true}>

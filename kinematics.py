@@ -46,70 +46,112 @@ def forward_kinematics(dh_params: List[DHParams]) -> List[Vec3]:
 
     return [p.tolist() for p in positions]
 
-# -------------------------------------------------------------
+def inverse_kinematics(target: Tuple[float, float, float],
+                       dh_base: List[dict],
+                       initial_angles: Tuple[float, float, float] = None,
+                       max_iter: int = 100,
+                       tolerance: float = 1e-3) -> Tuple[float, float, float] | None:
+    """
+    Numerical IK using Jacobian pseudoinverse method.
+    Works with any DH parameter configuration.
 
-# def inverse_kinematics_planar(target_xy: Union[Tuple[float, float], np.ndarray], 
-#                               L1: float, L2: float) -> Union[Tuple[float, float], None]:
-#     """
-#     A lightweight, analytical Inverse Kinematics solver for a simple 2-link 
-#     planar (RR) manipulator. 
-    
-#     This is an analytical method specific to a common 2-DOF structure. 
-#     General IK for complex robots requires more involved methods 
-#     (e.g., iterative/Jacobian-based).
-    
-#     Args:
-#         target_xy: (x, y) coordinates of the desired end-effector position.
-#         L1: Length of the first link.
-#         L2: Length of the second link.
+    Args:
+        target: (x, y, z) end-effector position
+        dh_base: Base DH parameters (list of dicts with alpha, a, d, theta)
+        initial_angles: Starting guess for joint angles in radians
+        max_iter: Maximum iterations
+        tolerance: Position error threshold in mm
 
-#     Returns:
-#         (theta1, theta2) in radians, or None if the target is unreachable.
-#     """
-#     x, y = target_xy
-#     D = (x**2 + y**2 - L1**2 - L2**2) / (2 * L1 * L2)
+    Returns:
+        (theta0, theta1, theta2) in radians, or None if no solution found
+    """
+    target_pos = np.array(target)
 
-#     # Check for reachability
-#     if D > 1.0 or D < -1.0:
-#         return None # Target unreachable
+    # Initialize with default angles if not provided
+    if initial_angles is None:
+        angles = np.array([dh_base[i]["theta"] for i in range(3)])
+    else:
+        angles = np.array(initial_angles)
 
-#     # theta2 (Elbow-up configuration)
-#     theta2 = np.arctan2(np.sqrt(1 - D**2), D) 
-    
-#     # theta1
-#     beta = np.arctan2(L2 * np.sin(theta2), L1 + L2 * np.cos(theta2))
-#     theta1 = np.arctan2(y, x) - beta
-    
-#     # Can also return the 'Elbow-down' solution: theta2 = np.arctan2(-np.sqrt(1 - D**2), D)
-#     return theta1, theta2
+    for _ in range(max_iter):
+        # Compute forward kinematics with current angles
+        dh_params = [
+            (dh_base[i]["alpha"], dh_base[i]["a"], dh_base[i]["d"],
+             angles[i] if i < 3 else dh_base[i]["theta"])
+            for i in range(len(dh_base))
+        ]
+        positions = forward_kinematics(dh_params)
+        current_pos = np.array(positions[-1])
 
-# # -------------------------------------------------------------
+        # Check if we've reached the target
+        error = target_pos - current_pos
+        if np.linalg.norm(error) < tolerance:
+            return tuple(angles)
 
-# def get_inverse_transformation(T: Matrix4x4) -> Matrix4x4:
-#     """
-#     Calculates the inverse of a 4x4 Homogeneous Transformation Matrix (T).
-    
-#     T_inv is structured such that: 
-#         R_inv = R_T (Rotation matrix is orthogonal)
-#         p_inv = -R_T * p
-    
-#     This avoids a full, computationally expensive matrix inversion (np.linalg.inv)
-#     by exploiting the properties of a transformation matrix.
-    
-#     Args:
-#         T: The 4x4 transformation matrix.
-        
-#     Returns:
-#         The inverse 4x4 transformation matrix T_inv.
-#     """
-#     R = T[:3, :3]
-#     p = T[:3, 3]
-    
-#     R_T = R.T       # Transpose of rotation matrix is its inverse
-#     p_inv = -R_T @ p # Inverse position vector
-    
-#     T_inv = np.eye(4)
-#     T_inv[:3, :3] = R_T
-#     T_inv[:3, 3] = p_inv
-    
-#     return T_inv
+        # Compute Jacobian numerically
+        J = np.zeros((3, 3))
+        delta = 1e-6
+        for i in range(3):
+            angles_plus = angles.copy()
+            angles_plus[i] += delta
+            dh_params_plus = [
+                (dh_base[j]["alpha"], dh_base[j]["a"], dh_base[j]["d"],
+                 angles_plus[j] if j < 3 else dh_base[j]["theta"])
+                for j in range(len(dh_base))
+            ]
+            pos_plus = np.array(forward_kinematics(dh_params_plus)[-1])
+            J[:, i] = (pos_plus - current_pos) / delta
+
+        # Compute pseudoinverse and update angles
+        try:
+            J_pinv = np.linalg.pinv(J)
+            angles += J_pinv @ error * 0.5  # Damping factor for stability
+        except np.linalg.LinAlgError:
+            return None
+
+    return None  # Failed to converge
+
+if __name__ == "__main__":
+    # Test IK/FK roundtrip for back-left leg configuration
+    import math
+
+    # Back-left leg DH params (from leg.py)
+    dh_base = [
+        {"alpha": 0, "a": 0, "d": 15.5, "theta": math.pi / 2},
+        {"alpha": -math.pi / 2, "a": -9.3, "d": 21.1, "theta": -2.1},
+        {"alpha": 0, "a": 63.25, "d": 0, "theta": -2},
+        {"alpha": 0, "a": 82.5, "d": 0, "theta": 0},
+    ]
+
+    print("Testing IK/FK roundtrip:\n")
+
+    test_angles = [(90, -120, -114), (90, -90, -90), (120, -60, -120)]
+
+    for i, angles_deg in enumerate(test_angles, 1):
+        print(f"Test {i}: angles = {angles_deg} deg")
+
+        # Forward kinematics
+        angles_rad = [degree_to_radians(a) for a in angles_deg]
+        dh_params = [
+            (dh_base[j]["alpha"], dh_base[j]["a"], dh_base[j]["d"],
+             angles_rad[j] if j < 3 else dh_base[j]["theta"])
+            for j in range(4)
+        ]
+        positions = forward_kinematics(dh_params)
+        target = positions[-1]
+        print(f"  FK -> position = ({target[0]:.2f}, {target[1]:.2f}, {target[2]:.2f})")
+
+        # Inverse kinematics
+        result = inverse_kinematics(tuple(target), dh_base, initial_angles=angles_rad[:3])
+        if result is None:
+            print("  IK -> FAILED TO CONVERGE\n")
+            continue
+
+        solved_deg = tuple(radians_to_degrees(a) for a in result)
+        print(f"  IK -> angles = ({solved_deg[0]:.1f}, {solved_deg[1]:.1f}, {solved_deg[2]:.1f}) deg")
+
+        # Check error
+        error = [abs(solved_deg[j] - angles_deg[j]) for j in range(3)]
+        max_error = max(error)
+        status = "PASS" if max_error < 1.0 else "FAIL"
+        print(f"  Error: {max_error:.3f} deg [{status}]\n")

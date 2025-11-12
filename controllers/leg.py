@@ -1,11 +1,14 @@
 import math
 from copy import deepcopy
+from typing import List
 
 from controllers.joint import Joint
 from kinematics import (
-    forward_kinematics, 
+    forward_kinematics,
+    inverse_kinematics,
     degree_to_radians,
     radians_to_degrees,
+    Vec3,
 )
 
 # Back Left leg
@@ -44,14 +47,13 @@ class Leg:
         self.shoulder.reset()
         self.upper_hip.reset()
         self.lower_hip.reset()
-        self.forward_kinematics()
 
     def state(self):
         return {
             "shoulder": self.shoulder.angle,
             "upper_hip": self.upper_hip.angle,
             "lower_hip": self.lower_hip.angle,
-            "positions": self.positions,
+            "positions": self.position,
         }
 
     @property
@@ -63,19 +65,9 @@ class Leg:
         self.shoulder.angle = angles[0]
         self.upper_hip.angle = angles[1]
         self.lower_hip.angle = angles[2]
-        self.forward_kinematics()
 
-    # def up(self):
-    #     x, y, z = self.angles
-    #     value = -5 if "right" in self.name else 5
-    #     self.angles = (x+value, y-value, z)
-
-    # def down(self):
-    #     x, y, z = self.angles
-    #     value = -5 if "right" in self.name else 5
-    #     self.angles = (x-value, y+value, z)
-
-    def forward_kinematics(self):
+    @property
+    def position(self) -> List[Vec3]:
         # Derive DH params for this leg
         dh_params = []
         for i, joint in enumerate(self.dh_params):
@@ -87,7 +79,20 @@ class Leg:
         for pos in positions:
             pos[0] += self.offset_x
             pos[2] += self.offset_z
-        self.positions = positions
+        return positions
 
-    def inverse_kinematics(self, x, y, z):
-        pass
+    @position.setter
+    def position(self, position: Vec3):
+        x, y, z = position
+        # Adjust for leg offsets
+        x_adj = x - self.offset_x
+        z_adj = z - self.offset_z
+        # Calculate joint angles using current angles as initial guess
+        current_angles = tuple(degree_to_radians(a) for a in self.angles)
+        angles = inverse_kinematics((x_adj, y, z_adj), self.dh_params, current_angles)
+        if angles is None:
+            print(f"Failed to calculate inverse kinematics for {self.name}")
+            return
+
+        # Convert to degrees and update joints
+        self.angles = tuple(radians_to_degrees(a) for a in angles)
