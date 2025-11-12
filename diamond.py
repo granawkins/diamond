@@ -24,6 +24,10 @@ def process_queue():
             body.up()
         elif cmd == "down":
             body.down()
+        elif cmd == "walk_forward":
+            body.start_walk()
+        elif cmd == "stop":
+            body.stop_walk()
 
 # Initialize and start server
 server.init(body.state, command)
@@ -41,5 +45,5 @@ if mode == "LIVE":
 hz = 20
 while True:
     process_queue()
-    # body.update()
+    body.update()
     time.sleep(1/hz)

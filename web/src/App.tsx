@@ -22,7 +22,7 @@ function App() {
     fetchState()
     const interval = setInterval(() => {
       fetchState()
-    }, 2000)
+    }, 100)
     return () => clearInterval(interval)
   }, [])
 
@@ -40,6 +40,8 @@ function App() {
       <button onClick={() => command('reset')}>Reset</button>
       <button onClick={() => command('up')}>Up</button>
       <button onClick={() => command('down')}>Down</button>
+      <button onClick={() => command('walk_forward')}>Walk Forward</button>
+      <button onClick={() => command('stop')}>Stop</button>
       <input
         type="checkbox"
         checked={editor}
