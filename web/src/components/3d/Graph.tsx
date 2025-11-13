@@ -21,7 +21,12 @@ const Graph = ({
       <OrbitControls enableDamping dampingFactor={0.05} />
       <group rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
         {showAxes && <Origin />}
-        {showGrid && <gridHelper args={[100, 10, '#444444', '#222222']} rotation={[-Math.PI / 2, 0, 0]} />}
+        {showGrid && (
+          <gridHelper
+            args={[100, 10, '#444444', '#222222']}
+            rotation={[-Math.PI / 2, 0, 0]}
+          />
+        )}
         {children}
       </group>
     </Canvas>

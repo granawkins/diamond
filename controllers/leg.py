@@ -38,13 +38,10 @@ class Leg:
             self.dh_params[1]["a"] *= -1
             self.dh_params[2]["d"] *= -1
 
-        self.shoulder = Joint(f"{name}_shoulder", mode)
-        self.upper_hip = Joint(f"{name}_upper_hip", mode)
-        self.lower_hip = Joint(f"{name}_lower_hip", mode)
-
-        self.shoulder.default = radians_to_degrees(self.dh_params[1]["theta"])
-        self.upper_hip.default = radians_to_degrees(self.dh_params[2]["theta"])
-        self.lower_hip.default = radians_to_degrees(self.dh_params[3]["theta"])
+        [t1, t2, t3] = [radians_to_degrees(self.dh_params[i]["theta"]) for i in (1, 2, 3)]
+        self.shoulder = Joint(f"{name}_shoulder", t1, mode)
+        self.upper_hip = Joint(f"{name}_upper_hip", t2, mode)
+        self.lower_hip = Joint(f"{name}_lower_hip", t3, mode)
         self.reset()
 
     def reset(self):

@@ -22,15 +22,12 @@ function App() {
     fetchState()
     const interval = setInterval(() => {
       fetchState()
-    }, 100)
+    }, 50)
     return () => clearInterval(interval)
   }, [])
 
   const command = (cmd: string) => {
     sendCommand(cmd)
-    setTimeout(() => {
-      fetchState()
-    }, 100)
   }
 
   return (
