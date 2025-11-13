@@ -22,7 +22,7 @@ function App() {
     fetchState()
     const interval = setInterval(() => {
       fetchState()
-    }, 50)
+    }, 1000 / 24)
     return () => clearInterval(interval)
   }, [])
 
@@ -73,24 +73,17 @@ function App() {
         </div>
       )}
       <div
-        style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '10px',
+          maxWidth: '800px',
+        }}
       >
-        <div>
-          <h2>Front Left</h2>
-          <Leg leg="front_left" state={state} />
-        </div>
-        <div>
-          <h2>Front Right</h2>
-          <Leg leg="front_right" state={state} />
-        </div>
-        <div>
-          <h2>Back Left</h2>
-          <Leg leg="back_left" state={state} />
-        </div>
-        <div>
-          <h2>Back Right</h2>
-          <Leg leg="back_right" state={state} />
-        </div>
+        <Leg name="front_left" state={state?.legs?.front_left} />
+        <Leg name="front_right" state={state?.legs?.front_right} />
+        <Leg name="back_left" state={state?.legs?.back_left} />
+        <Leg name="back_right" state={state?.legs?.back_right} />
       </div>
     </>
   )

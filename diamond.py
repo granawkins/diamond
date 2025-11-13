@@ -27,16 +27,7 @@ def process_queue():
     """Process all commands in queue"""
     while not command_queue.empty():
         cmd = command_queue.get()
-        if cmd == "reset":
-            body.reset()
-        elif cmd == "up":
-            body.up()
-        elif cmd == "down":
-            body.down()
-        elif cmd == "walk_forward":
-            body.start_walk()
-        elif cmd == "stop":
-            body.stop_walk()
+        body.command(cmd)
 
 # Initialize and start server
 server.init(body.state, command)
@@ -51,8 +42,8 @@ if mode == "LIVE":
     game_controller_thread = threading.Thread(target=game_controller.run, daemon=True)
     game_controller_thread.start()
 
-hz = 20
+hz = 12
 while True:
     process_queue()
-    body.update()
+    # body.update()
     time.sleep(1/hz)

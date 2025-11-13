@@ -1,25 +1,58 @@
-import type { State } from '../types'
+import type { LegState, JointState } from '../types'
+import { sendCommand } from '../utils'
 
-const Joint = ({ name, angle }: { name: string; angle: number }) => {
+const round = (value: number) => {
+  return Math.round(value * 10) / 10
+}
+
+const Joint = ({
+  name,
+  state,
+}: {
+  name: string
+  state?: JointState | null
+}) => {
+  const angle = state?.angle || 0
+  const actual = state?.actual || 0
+  const m = state?.m || 0
+  const b = state?.b || 0
   return (
-    <div>
-      {name}: {angle}
-    </div>
+    <tr>
+      <td>{name.split('_').slice(2, 4).join('_')}</td>
+      <td>
+        <tr>
+          <button
+            onClick={() => sendCommand(`set_${name}_angle_${round(angle - 1)}`)}
+          >
+            -
+          </button>
+          {`angle: ${round(angle)}`}
+          <button
+            onClick={() => sendCommand(`set_${name}_angle_${round(angle + 1)}`)}
+          >
+            +
+          </button>
+        </tr>
+        <tr>{`actual: ${round(actual)}`}</tr>
+        <tr>{`m: ${m}`}</tr>
+        <tr>{`b: ${b}`}</tr>
+      </td>
+    </tr>
   )
 }
 
-const Leg = ({ leg, state }: { leg: string; state?: State | null }) => {
-  const angles = state?.legs[leg as keyof typeof state.legs] || {
-    lower_hip: 0,
-    upper_hip: 0,
-    shoulder: 0,
-  }
+const Leg = ({ name, state }: { name: string; state?: LegState | null }) => {
   return (
-    <>
-      <Joint name="lower_hip" angle={angles.lower_hip} />
-      <Joint name="upper_hip" angle={angles.upper_hip} />
-      <Joint name="shoulder" angle={angles.shoulder} />
-    </>
+    <table style={{ border: '1px solid black' }}>
+      <tbody style={{ verticalAlign: 'top', textAlign: 'left' }}>
+        <tr>
+          <td>{name}</td>
+          <Joint name={`${name}_lower_hip`} state={state?.lower_hip} />
+          <Joint name={`${name}_upper_hip`} state={state?.upper_hip} />
+          <Joint name={`${name}_shoulder`} state={state?.shoulder} />
+        </tr>
+      </tbody>
+    </table>
   )
 }
 

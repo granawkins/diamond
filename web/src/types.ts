@@ -1,9 +1,16 @@
 export type Vec3 = [number, number, number]
 
-type LegState = {
-  shoulder: number
-  upper_hip: number
-  lower_hip: number
+export type JointState = {
+  angle: number
+  actual: number
+  m: number
+  b: number
+}
+
+export type LegState = {
+  shoulder: JointState
+  upper_hip: JointState
+  lower_hip: JointState
   positions: Vec3[]
 }
 

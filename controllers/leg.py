@@ -51,9 +51,9 @@ class Leg:
 
     def state(self):
         return {
-            "shoulder": self.shoulder.angle,
-            "upper_hip": self.upper_hip.angle,
-            "lower_hip": self.lower_hip.angle,
+            "shoulder": self.shoulder.state(),
+            "upper_hip": self.upper_hip.state(),
+            "lower_hip": self.lower_hip.state(),
             "positions": self.position,
         }
 

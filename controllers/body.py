@@ -28,12 +28,24 @@ class Body:
             "battery": self.battery.state()
         }
 
-    def start_walk(self):
-        self.gait = "trot"
-
-    def stop_walk(self):
-        """Stop walking gait and return to default position."""
-        self.gait = None
+    def command(self, cmd: str):
+        if cmd == "reset":
+            self.reset()
+        elif cmd == "walk_forward":
+            self.gait = "trot"
+        elif cmd == "stop":
+            self.gait = None
+        elif cmd.startswith("set_"):
+            parts = cmd.split("_")
+            leg_name = '_'.join(parts[1:3])  # e.g. 'front_left'
+            joint_name = '_'.join(parts[3:-2])  # e.g. 'shoulder', 'upper_hip'
+            attribute = parts[-2]
+            value = float(parts[-1])
+            try:
+                joint = getattr(self.legs[leg_name], joint_name)
+                setattr(joint, attribute, value)
+            except (AttributeError, ValueError) as e:
+                print(f"Error processing command: {cmd} - {e}")
 
     def update(self):
         """Update gait state and leg positions. Call this each main loop iteration."""
@@ -69,17 +81,3 @@ class Body:
         self.target_positions = {
             name: self.default_positions[name] for name in self.legs
         }
-
-    def up(self):
-        """Move body up by adjusting target positions"""
-        self.gait = None  # Stop any active gait
-        for name in self.legs:
-            pos = self.target_positions[name]
-            self.target_positions[name] = (pos[0], pos[1], pos[2] + 5)
-
-    def down(self):
-        """Move body down by adjusting target positions"""
-        self.gait = None  # Stop any active gait
-        for name in self.legs:
-            pos = self.target_positions[name]
-            self.target_positions[name] = (pos[0], pos[1], pos[2] - 5)

@@ -21,27 +21,38 @@ SERVO_CONFIG = {
 }
 
 class Joint:
+    _angle: float
+    _actual: float
+
     def __init__(self, name, default, mode="SIM"):
         self.default = default
         self.servo = None
-        self.m = 1
-        self.b = 0
+
+        config = SERVO_CONFIG[name]
+        self.m = config["m"]
+        self.b = config["b"]
 
         if mode == "LIVE":
             from controllers.pca import pca
             
-            config = SERVO_CONFIG[name]
             self.servo = adafruit_servo.Servo(
                 pca.channels[config["channel"]],
                 min_pulse=500,
                 max_pulse=2500,
             )
-            self.m = config["m"]
-            self.b = config["b"]
-            return
+
+        self.angle = default
 
     def reset(self):
         self.angle = self.default
+
+    def state(self):
+        return {
+            "angle": self._angle,
+            "actual": self._actual,
+            "m": self.m,
+            "b": self.b,
+        }
 
     @property
     def angle(self):
@@ -49,6 +60,7 @@ class Joint:
 
     @angle.setter
     def angle(self, value):
-        if self.servo is not None:
-            self.servo.angle = self.m * value + self.b
         self._angle = value
+        self._actual = self.m * value + self.b
+        if self.servo is not None:
+            self.servo.angle = self._actual
