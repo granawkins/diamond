@@ -69,7 +69,7 @@ class Leg:
 
     @property
     def position(self) -> List[Vec3]:
-        # Derive DH params for this leg\
+        # Derive DH params for this leg
         angles = [None] + list(self.angles) + [None]
         dh_params = []
         for joint, angle in zip(self.dh_params, angles):

@@ -1,3 +1,4 @@
+import os
 import time
 import queue
 import threading
@@ -6,9 +7,17 @@ import subscribers.server as server
 
 command_queue = queue.Queue()
 
-mode = "SIM"
+# Check if it's a Raspberry PI
+if os.path.exists("/proc/cpuinfo"):
+    with open("/proc/cpuinfo", "r") as f:
+        if "Raspberry Pi" in f.read():
+            mode = "LIVE"
+        else:
+            mode = "SIM"
+else:
+    mode = "SIM"
 
-body = Body()
+body = Body(mode)
 
 def command(cmd):
     """Add command to queue"""
@@ -36,7 +45,7 @@ server_thread.start()
 
 # Initialize and start xbox controller
 if mode == "LIVE":
-    from subscribers.game_controller import game_controller
+    import subscribers.game_controller as game_controller
     
     game_controller.init(command)
     game_controller_thread = threading.Thread(target=game_controller.run, daemon=True)
