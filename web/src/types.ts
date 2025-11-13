@@ -25,6 +25,7 @@ export type State = {
     percentage: number
     status: string
   }
+  update_enabled: boolean
 }
 
 export type DHParams = {

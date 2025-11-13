@@ -44,6 +44,8 @@ class Body:
             try:
                 joint = getattr(self.legs[leg_name], joint_name)
                 setattr(joint, attribute, value)
+                if attribute != "angle":  # make sure it triggers an update
+                    joint.angle = joint.angle
             except (AttributeError, ValueError) as e:
                 print(f"Error processing command: {cmd} - {e}")
 

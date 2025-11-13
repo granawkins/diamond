@@ -35,15 +35,24 @@ function App() {
       <h1>Diamond</h1>
       <Battery state={state} />
       <button onClick={() => command('reset')}>Reset</button>
-      <button onClick={() => command('up')}>Up</button>
-      <button onClick={() => command('down')}>Down</button>
       <button onClick={() => command('walk_forward')}>Walk Forward</button>
       <button onClick={() => command('stop')}>Stop</button>
-      <input
-        type="checkbox"
-        checked={editor}
-        onChange={() => setEditor(!editor)}
-      />
+      <label>
+        <input
+          type="checkbox"
+          checked={editor}
+          onChange={() => setEditor(!editor)}
+        />
+        DH Params Editor
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={state?.update_enabled}
+          onChange={() => command('toggle_update')}
+        />
+        Update Enabled
+      </label>
       {editor ? (
         <DHEditor />
       ) : (

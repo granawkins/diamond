@@ -18,10 +18,21 @@ else:
     mode = "SIM"
 
 body = Body(mode)
+update_enabled = True
 
 def command(cmd):
     """Add command to queue"""
+    if cmd == "toggle_update":
+        global update_enabled
+        update_enabled = not update_enabled
+        print(f"Update enabled: {update_enabled}")
     command_queue.put(cmd)
+
+def get_state():
+    return {
+        **body.state(),
+        "update_enabled": update_enabled,
+    }
 
 def process_queue():
     """Process all commands in queue"""
@@ -30,7 +41,7 @@ def process_queue():
         body.command(cmd)
 
 # Initialize and start server
-server.init(body.state, command)
+server.init(get_state, command)
 server_thread = threading.Thread(target=server.run, daemon=True)
 server_thread.start()
 
@@ -45,5 +56,6 @@ if mode == "LIVE":
 hz = 12
 while True:
     process_queue()
-    # body.update()
+    if update_enabled:
+        body.update()
     time.sleep(1/hz)
