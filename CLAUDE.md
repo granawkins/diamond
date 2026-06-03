@@ -10,13 +10,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Diamond is a quadruped robot running on Raspberry Pi 5 that controls MG90 servos through a PCA9685 PWM controller via I2C.
+Diamond is a Raspberry Pi 5 robot. It began as a quadruped walker (MG90 servos via a
+PCA9685 PWM controller over I2C) and is being rebuilt as a wheeled rover — see
+`docs/rover-plan.md`. The walker code (`gait.py`, `kinematics.py`, `controllers/`) is
+still the current codebase; the rover code does not exist yet.
 
 ## Hardware Setup
 
 - **Controller**: Raspberry Pi 5 with I2C on GPIO pins 1/3/5/9
 - **Power**: Waveshare UPS HAT (B) with two 18650 cells (8.4V charger). The HAT's 5V output (pin 2) connects directly to V+ on the PCA9685
-  - Full documentation available in `docs/waveshare_ups_hat_b.md` (source: https://www.waveshare.com/wiki/UPS_HAT_(B))
+  - Reference: https://www.waveshare.com/wiki/UPS_HAT_(B)
   - Battery monitoring via I2C using INA219.py library
   - Provides voltage, current, power, and remaining capacity readings
   - Negative current = discharging (powering Pi), positive current = charging
@@ -25,6 +28,10 @@ Diamond is a quadruped robot running on Raspberry Pi 5 that controls MG90 servos
 - **Servos**: MG90 servos with min_pulse=500, max_pulse=2500
 - **Channel mapping**: 0-3 front left, 4-7 back left, 8-11 back right, 12-15 front right
 - **Input**: Xbox Wireless Controller (MAC: 40:8E:2C:4A:25:C9) via Bluetooth on /dev/input/event5, configured to auto-reconnect
+
+**Planned rover hardware** (ordered, not yet installed) — see `docs/rover-plan.md`:
+4× JGA25-370 12V 280rpm geared motors, 2× L298 H-bridge drivers, and the reused
+3S 11.1V 2200mAh LiPo for motor power (the Pi stays on the UPS HAT).
 
 ## Development
 

@@ -1,8 +1,13 @@
 # Diamond
 
-Diamond is a quadruped robot, and these are all the files related to its design and software. 
+Diamond started as a quadruped walker and is being rebuilt as a wheeled rover —
+the MG90 servos couldn't lift the walker once the battery pack was mounted. The
+full conversion plan is in [docs/rover-plan.md](docs/rover-plan.md).
 
-## Electronics
+The walker code (`gait.py`, `kinematics.py`, `controllers/`) remains in the repo.
+
+## Electronics (walker)
+
 ```
 Waveshare UPS HAT (2x 18650 cells, 8.4V charger)
                 |
@@ -38,9 +43,10 @@ sudo journalctl -u diamond-webapp -f   # View live logs
 The service auto-starts on boot and auto-restarts on crashes.
 
 ## Roadmap
-- Better leg design
-- Power switch/button
-- Full body design
-- Control programming
-- VLM integration
-- VLA / RLing
+
+Rover conversion — detail in [docs/rover-plan.md](docs/rover-plan.md):
+
+1. 4WD differential drive (parts ordered)
+2. Ackermann steering
+3. Suspension, camera, mic, IMU
+4. Vision policy (behavioral cloning)
