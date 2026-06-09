@@ -6,7 +6,8 @@
 
 [Unit]
 Description=Diamond Rover Xbox Drive
-After=network.target
+Wants=bluetooth.service
+After=bluetooth.service network.target
 
 [Service]
 Type=simple

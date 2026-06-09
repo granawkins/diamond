@@ -2,6 +2,7 @@ import argparse
 import glob
 import os
 import select
+import subprocess
 from time import sleep
 
 from evdev import InputDevice, ecodes
@@ -11,6 +12,7 @@ from diamond_rover.drive import RoverDrive, mix_differential
 
 LEFT_STICK_X = ecodes.ABS_X
 LEFT_STICK_Y = ecodes.ABS_Y
+XBOX_CONTROLLER_MAC = "40:8E:2C:4A:2D:2E"
 
 
 def drive_from_stick(drive, throttle, steering, max_speed):
@@ -54,6 +56,7 @@ def mix_from_stick(device, x_value, y_value, deadzone):
 def parse_args():
     parser = argparse.ArgumentParser(description="Drive Diamond from an Xbox left stick.")
     parser.add_argument("--device", default="/dev/input/event5")
+    parser.add_argument("--controller-mac", default=XBOX_CONTROLLER_MAC)
     parser.add_argument("--deadzone", type=float, default=0.08)
     parser.add_argument("--max-speed", type=float, default=1.00)
     return parser.parse_args()
@@ -72,7 +75,35 @@ def find_device(path):
         if "xbox" in device.name.lower():
             return candidate
 
-    return path
+    return None
+
+
+def connect_controller(mac):
+    try:
+        subprocess.run(
+            ["bluetoothctl", "connect", mac],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        print(f"Bluetooth connect attempt failed: {error}", flush=True)
+
+
+def wait_for_device(path, controller_mac):
+    while True:
+        device_path = find_device(path)
+
+        if device_path:
+            return device_path
+
+        print(
+            f"Waiting for Xbox controller {controller_mac}; trying Bluetooth connect",
+            flush=True,
+        )
+        connect_controller(controller_mac)
+        sleep(5)
 
 
 def main():
@@ -84,7 +115,7 @@ def main():
     if not 0 <= args.max_speed <= 1:
         raise SystemExit("--max-speed must be between 0 and 1")
 
-    device_path = find_device(args.device)
+    device_path = wait_for_device(args.device, args.controller_mac)
     device = InputDevice(device_path)
     drive = RoverDrive()
     x_value = device.absinfo(LEFT_STICK_X).value
