@@ -1,8 +1,9 @@
 .venv
 __pycache__/
-*.swp
-*.log
+**/__pycache__/
 
 web/node_modules
 web/dist
 webapp/node_modules
+captures/*
+!captures/.gitkeep

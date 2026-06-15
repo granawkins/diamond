@@ -1,160 +1,133 @@
 import argparse
-import glob
-import os
-import select
-import subprocess
-from time import sleep
+from time import monotonic, sleep
 
-from evdev import InputDevice, ecodes
-
-from diamond_rover.drive import RoverDrive, mix_differential
-
-
-LEFT_STICK_X = ecodes.ABS_X
-LEFT_STICK_Y = ecodes.ABS_Y
-XBOX_CONTROLLER_MAC = "40:8E:2C:4A:2D:2E"
+from controllers.led_display import LedDisplay
+from controllers.rover import connect_rover
+from controllers.utils import OptionalController
+from controllers.waveshare_hat import read_battery
+from controllers.wifi import format_wifi_level, read_wifi_level
+from controllers.xbox_controller import (
+    DEFAULT_CONTROLLER_MAC,
+    DEFAULT_DEVICE,
+    connect_xbox_controller,
+)
 
 
-def drive_from_stick(drive, throttle, steering, max_speed):
-    left_power, right_power = mix_differential(throttle, steering, max_speed=max_speed)
-    drive.move(left_power, right_power)
-    print(
-        f"throttle={throttle:+.0%} steering={steering:+.0%} "
-        f"left={left_power:+.0%} right={right_power:+.0%}",
-        flush=True,
-    )
-
-
-def normalize_axis(value, absinfo):
-    center = (absinfo.min + absinfo.max) / 2
-    span = (absinfo.max - absinfo.min) / 2
-
-    if span <= 0:
-        return 0
-
-    return max(-1, min(1, (value - center) / span))
-
-
-def apply_deadzone(value, deadzone):
-    if abs(value) < deadzone:
-        return 0
-
-    scaled = (abs(value) - deadzone) / (1 - deadzone)
-    return scaled if value > 0 else -scaled
-
-
-def mix_from_stick(device, x_value, y_value, deadzone):
-    x_info = device.absinfo(LEFT_STICK_X)
-    y_info = device.absinfo(LEFT_STICK_Y)
-
-    steering = apply_deadzone(normalize_axis(x_value, x_info), deadzone)
-    throttle = apply_deadzone(-normalize_axis(y_value, y_info), deadzone)
-
-    return throttle, steering
+DISPLAY_INTERVAL = 1.0
+DRIVE_POLL_INTERVAL = 0.05
+CONTROLLER_RETRY_INTERVAL = 5.0
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Drive Diamond from an Xbox left stick.")
-    parser.add_argument("--device", default="/dev/input/event5")
-    parser.add_argument("--controller-mac", default=XBOX_CONTROLLER_MAC)
+    parser = argparse.ArgumentParser(description="Run Diamond's rover control loop.")
+    parser.add_argument("--device", default=DEFAULT_DEVICE)
+    parser.add_argument("--controller-mac", default=DEFAULT_CONTROLLER_MAC)
     parser.add_argument("--deadzone", type=float, default=0.08)
     parser.add_argument("--max-speed", type=float, default=1.00)
+    parser.add_argument("--message", default="Diamond online")
+    parser.add_argument("--no-display", action="store_true")
+    parser.add_argument("--wifi-interface", help="wireless interface to read, such as wlan0")
     return parser.parse_args()
 
 
-def find_device(path):
-    if os.path.exists(path):
-        return path
-
-    for candidate in sorted(glob.glob("/dev/input/event*")):
-        try:
-            device = InputDevice(candidate)
-        except OSError:
-            continue
-
-        if "xbox" in device.name.lower():
-            return candidate
-
-    return None
+def status_line(battery, wifi):
+    battery_text = f"BAT {battery['percent']:.0f}%" if battery else "BAT --%"
+    return f"{battery_text} {format_wifi_level(wifi)}"[:16]
 
 
-def connect_controller(mac):
+def update_display(display, message, wifi_interface):
     try:
-        subprocess.run(
-            ["bluetoothctl", "connect", mac],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=8,
-        )
-    except (OSError, subprocess.TimeoutExpired) as error:
-        print(f"Bluetooth connect attempt failed: {error}", flush=True)
+        battery = read_battery()
+    except OSError as error:
+        print(f"Battery read failed: {error}", flush=True)
+        battery = None
 
-
-def wait_for_device(path, controller_mac):
-    while True:
-        device_path = find_device(path)
-
-        if device_path:
-            return device_path
-
-        print(
-            f"Waiting for Xbox controller {controller_mac}; trying Bluetooth connect",
-            flush=True,
-        )
-        connect_controller(controller_mac)
-        sleep(5)
+    wifi = read_wifi_level(wifi_interface)
+    line1 = status_line(battery, wifi)
+    display.write(line1, message)
+    return line1
 
 
 def main():
     args = parse_args()
+    rover = OptionalController(
+        "Rover motor output",
+        lambda: connect_rover(max_speed=args.max_speed),
+        retry_interval=CONTROLLER_RETRY_INTERVAL,
+    )
+    xbox = OptionalController(
+        "Xbox controller",
+        lambda: connect_xbox_controller(
+            device_path=args.device,
+            controller_mac=args.controller_mac,
+            deadzone=args.deadzone,
+        ),
+        retry_interval=CONTROLLER_RETRY_INTERVAL,
+    )
+    display = None
 
-    if not 0 <= args.deadzone < 1:
-        raise SystemExit("--deadzone must be at least 0 and less than 1")
-
-    if not 0 <= args.max_speed <= 1:
-        raise SystemExit("--max-speed must be between 0 and 1")
-
-    device_path = wait_for_device(args.device, args.controller_mac)
-    device = InputDevice(device_path)
-    drive = RoverDrive()
-    x_value = device.absinfo(LEFT_STICK_X).value
-    y_value = device.absinfo(LEFT_STICK_Y).value
-
-    print(f"Connected to {device.name} at {device_path}")
-    print("Left stick drives live. Release to center/stop. Press Ctrl+C to exit.")
+    print("Diamond control loop starting. Press Ctrl+C to exit.")
 
     try:
-        throttle, steering = mix_from_stick(device, x_value, y_value, args.deadzone)
-        drive_from_stick(drive, throttle, steering, args.max_speed)
+        if not args.no_display:
+            try:
+                display = LedDisplay()
+                update_display(display, args.message, args.wifi_interface)
+            except OSError as error:
+                print(f"Display unavailable: {error}", flush=True)
+                display = None
+
+        next_display_update = monotonic() + DISPLAY_INTERVAL
 
         while True:
-            readable, _, _ = select.select([device.fd], [], [], 0.25)
+            now = monotonic()
+            controller = xbox.tick(now)
+            motor_output = rover.tick(now)
 
-            if not readable:
-                continue
-
-            for event in device.read():
-                if event.type != ecodes.EV_ABS:
+            if controller is None:
+                sleep(DRIVE_POLL_INTERVAL)
+            else:
+                try:
+                    state = controller.poll(timeout=DRIVE_POLL_INTERVAL)
+                except OSError as error:
+                    xbox.clear(error)
+                    stop_rover(rover)
                     continue
 
-                if event.code == LEFT_STICK_X:
-                    x_value = event.value
-                elif event.code == LEFT_STICK_Y:
-                    y_value = event.value
-                else:
-                    continue
+                if state.changed and motor_output is not None:
+                    powers = motor_output.drive(state.x, state.y)
+                    print_drive_state(state, powers)
 
-                throttle, steering = mix_from_stick(device, x_value, y_value, args.deadzone)
-                drive_from_stick(drive, throttle, steering, args.max_speed)
+            now = monotonic()
+
+            if display and now >= next_display_update:
+                try:
+                    update_display(display, args.message, args.wifi_interface)
+                except OSError as error:
+                    print(f"Display update failed: {error}", flush=True)
+                    display = None
+                next_display_update = now + DISPLAY_INTERVAL
 
     except KeyboardInterrupt:
         print("Stopping")
-    except OSError as error:
-        print(f"Controller disconnected or unreadable: {error}")
     finally:
-        drive.stop()
+        stop_rover(rover)
+        if display:
+            display.close()
         sleep(0.05)
+
+
+def stop_rover(rover):
+    if rover.device:
+        rover.device.stop()
+
+
+def print_drive_state(state, powers):
+    print(
+        f"x={state.x:+.0%} y={state.y:+.0%} "
+        f"left={powers['left']:+.0%} right={powers['right']:+.0%}",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

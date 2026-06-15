@@ -22,17 +22,10 @@ def validate_speed(value, name="speed"):
     return speed
 
 
-def validate_seconds(value, maximum=5):
-    seconds = float(value)
-    if not 0 < seconds <= maximum:
-        raise ValueError(f"seconds must be greater than 0 and no more than {maximum:g}")
-    return seconds
-
-
-def mix_differential(throttle, steering, max_speed=1):
+def mix_differential(y, x, max_speed=1):
     max_speed = validate_speed(max_speed, "max_speed")
-    raw_left = float(throttle) + float(steering)
-    raw_right = float(throttle) - float(steering)
+    raw_left = float(y) + float(x)
+    raw_right = float(y) - float(x)
     scale = max(1, abs(raw_left), abs(raw_right))
 
     return (
@@ -71,8 +64,13 @@ class MotorSide:
         self.enable.value = 0
 
 
-class RoverDrive:
-    def __init__(self, pins=PINS):
+class Rover:
+    """Skid-steer rover controller."""
+
+    available = True
+
+    def __init__(self, pins=PINS, max_speed=1):
+        self.max_speed = validate_speed(max_speed, "max_speed")
         self.left = MotorSide(
             forward_pin=pins["left"]["forward"],
             reverse_pin=pins["left"]["reverse"],
@@ -84,16 +82,21 @@ class RoverDrive:
             enable_pin=pins["right"]["enable"],
         )
 
+    def drive(self, x, y):
+        left_power, right_power = mix_differential(y, x, max_speed=self.max_speed)
+        self.move(left_power, right_power)
+        return {"left": left_power, "right": right_power}
+
     def move(self, left_power, right_power):
         self.left.move(validate_power(left_power, "left"))
         self.right.move(validate_power(right_power, "right"))
 
-    def move_side(self, side, power):
-        if side not in ("left", "right"):
-            raise ValueError("side must be left or right")
-
-        getattr(self, side).move(validate_power(power, side))
-
     def stop(self):
         self.left.stop()
         self.right.stop()
+
+
+def connect_rover(max_speed=1, pins=PINS):
+    """Create a real rover controller or raise if GPIO setup is unavailable."""
+
+    return Rover(pins=pins, max_speed=max_speed)
