@@ -1,3 +1,5 @@
 evdev
+fastapi
 gpiozero
 lgpio
+uvicorn

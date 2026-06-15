@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Diamond</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        background: #101214;
+        color: #f3f5f7;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      h1,
+      h2 {
+        margin: 0 0 12px;
+      }
+
+      section {
+        border-top: 1px solid #2b3036;
+        padding: 18px 0;
+      }
+
+      button,
+      input,
+      select {
+        border: 1px solid #3a424c;
+        border-radius: 6px;
+        background: #171b20;
+        color: #f3f5f7;
+        font: inherit;
+        padding: 10px 12px;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:active,
+      button.active {
+        background: #334155;
+      }
+
+      input {
+        min-width: 260px;
+      }
+
+      .status {
+        color: #b9c0ca;
+        font-size: 14px;
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .joystick {
+        width: 180px;
+        height: 180px;
+        border: 1px solid #3a424c;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        touch-action: none;
+        background: #171b20;
+      }
+
+      .stick {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: #60a5fa;
+      }
+
+      .captures {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+      }
+
+      .capture {
+        display: grid;
+        gap: 8px;
+        border: 1px solid #2b3036;
+        padding: 10px;
+      }
+
+      .capture img,
+      .capture video {
+        width: 100%;
+      }
+
+      a {
+        color: #93c5fd;
+        overflow-wrap: anywhere;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Diamond</h1>
+        <div id="status" class="status">Connecting...</div>
+      </header>
+
+      <section>
+        <h2>Display</h2>
+        <form id="display-form" class="row">
+          <input id="display-message" maxlength="64" placeholder="Bottom line message" />
+          <button type="submit">Write</button>
+        </form>
+      </section>
+
+      <section>
+        <h2>Drive</h2>
+        <div id="joystick" class="joystick">
+          <div id="stick" class="stick"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Microphone</h2>
+        <button id="record-button">Hold to Record</button>
+      </section>
+
+      <section>
+        <h2>Speaker</h2>
+        <div class="row">
+          <button id="tone-button">Play Tone</button>
+          <select id="audio-select"></select>
+          <button id="play-audio-button">Play Capture</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Camera</h2>
+        <div class="row">
+          <button id="photo-button">Take Photo</button>
+          <button id="video-button">Record 5s Video</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Captures</h2>
+        <div id="captures" class="captures"></div>
+      </section>
+    </main>
+
+    <script>
+      const statusEl = document.querySelector("#status");
+      const capturesEl = document.querySelector("#captures");
+      const audioSelect = document.querySelector("#audio-select");
+      const joystick = document.querySelector("#joystick");
+      const stick = document.querySelector("#stick");
+      let captureSignature = "";
+
+      async function api(path, options = {}) {
+        const response = await fetch(path, {
+          headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+          ...options,
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || response.statusText);
+        }
+
+        return response.json();
+      }
+
+      async function refreshStatus() {
+        try {
+          const data = await api("/api/status");
+          const battery = data.battery ? `${Math.round(data.battery.percent)}%` : "--%";
+          const wifi = data.wifi ? `${data.wifi.bars}/4` : "0/4";
+          const rover = data.controllers.rover ? "rover" : "no rover";
+          const xbox = data.controllers.xbox ? "xbox" : "no xbox";
+          statusEl.textContent = `BAT ${battery} WIFI ${wifi} | ${rover} | ${xbox}`;
+          renderCapturesIfChanged(data.captures || []);
+        } catch (error) {
+          statusEl.textContent = `Offline: ${error.message}`;
+        }
+      }
+
+      function renderCapturesIfChanged(captures) {
+        const nextSignature = captures.map((capture) => `${capture.name}:${capture.size}`).join("|");
+        if (nextSignature === captureSignature) return;
+        captureSignature = nextSignature;
+        renderCaptures(captures);
+      }
+
+      function renderCaptures(captures) {
+        capturesEl.innerHTML = "";
+        audioSelect.innerHTML = "";
+
+        for (const capture of captures) {
+          if (capture.kind === "audio") {
+            const option = document.createElement("option");
+            option.value = capture.name;
+            option.textContent = capture.name;
+            audioSelect.append(option);
+          }
+
+          const item = document.createElement("div");
+          item.className = "capture";
+          const link = document.createElement("a");
+          link.href = capture.url;
+          link.textContent = capture.name;
+          link.target = "_blank";
+          item.append(link);
+
+          if (capture.kind === "image") {
+            const img = document.createElement("img");
+            img.src = capture.url;
+            item.append(img);
+          } else if (capture.kind === "video") {
+            const video = document.createElement("video");
+            video.src = capture.url;
+            video.controls = true;
+            item.append(video);
+          }
+
+          capturesEl.append(item);
+        }
+      }
+
+      document.querySelector("#display-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = document.querySelector("#display-message").value;
+        await api("/api/display/message", { method: "POST", body: JSON.stringify({ text }) });
+        refreshStatus();
+      });
+
+      document.querySelector("#tone-button").addEventListener("click", () => {
+        api("/api/speaker/tone", {
+          method: "POST",
+          body: JSON.stringify({ frequency: 660, seconds: 0.15, volume: 0.05 }),
+        });
+      });
+
+      document.querySelector("#play-audio-button").addEventListener("click", () => {
+        if (!audioSelect.value) return;
+        api("/api/speaker/play", { method: "POST", body: JSON.stringify({ name: audioSelect.value }) });
+      });
+
+      document.querySelector("#photo-button").addEventListener("click", async () => {
+        await api("/api/camera/photo", { method: "POST" });
+        refreshStatus();
+      });
+
+      document.querySelector("#video-button").addEventListener("click", async () => {
+        await api("/api/camera/video", { method: "POST", body: JSON.stringify({ seconds: 5 }) });
+        refreshStatus();
+      });
+
+      const recordButton = document.querySelector("#record-button");
+      recordButton.addEventListener("pointerdown", async () => {
+        recordButton.classList.add("active");
+        await api("/api/mic/record/start", { method: "POST" });
+      });
+
+      async function stopRecording() {
+        if (!recordButton.classList.contains("active")) return;
+        recordButton.classList.remove("active");
+        await api("/api/mic/record/stop", { method: "POST" });
+        refreshStatus();
+      }
+
+      recordButton.addEventListener("pointerup", stopRecording);
+      recordButton.addEventListener("pointercancel", stopRecording);
+      recordButton.addEventListener("pointerleave", stopRecording);
+
+      let joystickActive = false;
+
+      function updateJoystick(event) {
+        if (!joystickActive) return;
+
+        const rect = joystick.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const radius = rect.width / 2;
+        const dx = Math.max(-radius, Math.min(radius, event.clientX - centerX));
+        const dy = Math.max(-radius, Math.min(radius, event.clientY - centerY));
+        const x = dx / radius;
+        const y = -dy / radius;
+
+        stick.style.transform = `translate(${dx}px, ${dy}px)`;
+        api("/api/drive", { method: "POST", body: JSON.stringify({ x, y }) }).catch(() => {});
+      }
+
+      joystick.addEventListener("pointerdown", (event) => {
+        joystickActive = true;
+        joystick.setPointerCapture(event.pointerId);
+        updateJoystick(event);
+      });
+
+      joystick.addEventListener("pointermove", updateJoystick);
+
+      async function stopDrive() {
+        joystickActive = false;
+        stick.style.transform = "translate(0, 0)";
+        await api("/api/drive/stop", { method: "POST" }).catch(() => {});
+      }
+
+      joystick.addEventListener("pointerup", stopDrive);
+      joystick.addEventListener("pointercancel", stopDrive);
+
+      refreshStatus();
+      setInterval(refreshStatus, 1000);
+    </script>
+  </body>
+</html>

@@ -172,14 +172,14 @@ cd webapp
 npm install
 ```
 
-## Web Status
+## Web Control
 
-The lightweight web page lives in [webapp/](webapp/) and is served by
-[webapp/server.js](webapp/server.js). It no longer drives the motors.
+The lightweight web page lives in [index.html](index.html) and is served by
+[diamond.py](diamond.py). `diamond.py` is the single hardware owner and also
+exposes HTTP endpoints for component testing.
 
 ```bash
-cd webapp
-npm start
+.venv/bin/python diamond.py --max-speed 1.00
 ```
 
 By default it listens on `0.0.0.0:3030`.

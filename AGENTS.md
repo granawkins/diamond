@@ -14,7 +14,7 @@ The project is currently two modules:
 - `diamond.py` main control-loop entry point
 - `controllers/` Python hardware controller modules
 - `rover-v2*` CAD files for the current 3D-printed body
-- `webapp/` Express-served control page
+- `index.html` single-file static control page served by FastAPI from `diamond.py`
 - `README.md` wiring and setup docs
 
 ## Python Controller Structure
@@ -104,15 +104,15 @@ control.
 
 ## Webapp
 
-The web page lives in `webapp/` and is served by the Express server in
-`webapp/server.js`. It is a lightweight status page only; do not add pulse/mix
-motor controls back unless the user asks.
+The web page lives in root `index.html` with inline CSS/JS and is served by the
+FastAPI server in `diamond.py`. `diamond.py` is the single long-running hardware
+owner: it runs the hardware loop, serves the browser UI, and exposes HTTP
+endpoints for component testing and future LLM tool calls.
 
 Start it from the repository root with:
 
 ```bash
-cd webapp
-npm start
+.venv/bin/python diamond.py --max-speed 1.00
 ```
 
 The server listens on `0.0.0.0:3030`, so it is reachable from the user's desktop
@@ -123,7 +123,7 @@ http://100.71.9.108:3030/
 ```
 
 If a sandboxed start fails with `listen EPERM: operation not permitted
-0.0.0.0:3030`, rerun the same `npm start` command with elevated permissions.
+0.0.0.0:3030`, rerun the same `diamond.py` command with elevated permissions.
 
 ## Xbox Rover Drive
 
