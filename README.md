@@ -84,7 +84,7 @@ BCM numbering is used in code.
 | Left reverse | GPIO6 | pin 31 | Left IN2 and IN4 |
 | Right PWM | GPIO13 | pin 33 | Right ENA and ENB |
 | Right forward | GPIO20 | pin 38 | Right IN1 and IN3 |
-| Right reverse | GPIO21 | pin 40 | Right IN2 and IN4 |
+| Right reverse | GPIO16 | pin 36 | Right IN2 and IN4 |
 | Ground | GND | pin 6 | Both L298 GND rails |
 
 If the L298 boards have ENA/ENB jumpers installed, remove those jumpers so the Pi
@@ -92,6 +92,27 @@ can control speed with PWM. Then connect:
 
 - Pi GPIO12 to both `ENA` and `ENB` on the left L298.
 - Pi GPIO13 to both `ENA` and `ENB` on the right L298.
+
+GPIO21 is reserved for I2S speaker audio and should not be used for motor
+control.
+
+## Speaker Audio
+
+The MAX98357A I2S amplifier uses the Pi's standard I2S playback pins.
+
+| MAX98357A | Pi BCM | Pi physical pin |
+|-----------|--------|-----------------|
+| BCLK | GPIO18 | pin 12 |
+| LRC / LRCLK | GPIO19 | pin 35 |
+| DIN | GPIO21 | pin 40 |
+| VIN | 5V | pin 2 or 4 |
+| GND | GND | any ground |
+
+The runtime audio device is:
+
+```text
+plughw:CARD=MAX98357A,DEV=0
+```
 
 If a motor spins backward during testing, swap that motor's two output wires at
 the L298 board. Keep the GPIO mapping unchanged.

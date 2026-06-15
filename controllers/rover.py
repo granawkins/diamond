@@ -1,6 +1,6 @@
 PINS = {
     "left": {"forward": 5, "reverse": 6, "enable": 12},
-    "right": {"forward": 20, "reverse": 21, "enable": 13},
+    "right": {"forward": 20, "reverse": 16, "enable": 13},
 }
 
 

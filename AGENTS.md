@@ -37,6 +37,7 @@ Keep controller modules narrow and hardware-specific:
 | `controllers/led_display.py` | Dumb two-line LCD text output |
 | `controllers/microphone.py` | USB microphone capture |
 | `controllers/camera.py` | Raspberry Pi camera still/video capture |
+| `controllers/speaker.py` | MAX98357A I2S speaker playback |
 | `controllers/utils.py` | Shared controller utilities such as capture paths and optional-device retry |
 
 Controller modules should fail gracefully at their boundary. If hardware may be
@@ -73,7 +74,20 @@ GPIO uses BCM numbering:
 | Side | Forward | Reverse | Enable PWM |
 |------|---------|---------|------------|
 | Left | GPIO5 | GPIO6 | GPIO12 |
-| Right | GPIO20 | GPIO21 | GPIO13 |
+| Right | GPIO20 | GPIO16 | GPIO13 |
+
+MAX98357A I2S speaker wiring uses the Pi's standard I2S playback pins:
+
+| MAX98357A | Pi GPIO | Pi physical pin |
+|-----------|---------|-----------------|
+| BCLK | GPIO18 | pin 12 |
+| LRC / LRCLK | GPIO19 | pin 35 |
+| DIN | GPIO21 | pin 40 |
+| VIN | 5V | pin 2 or 4 |
+| GND | GND | any ground |
+
+GPIO21 is reserved for I2S audio data and should not be reused for rover motor
+control.
 
 ### Still Need
 
